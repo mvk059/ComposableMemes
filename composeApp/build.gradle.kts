@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -36,12 +38,31 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material)
+            implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtime.compose)
+
+            implementation(libs.compose.navigation)
+            implementation(libs.compose.lifecycle.runtime)
+            implementation(libs.compose.lifecycle.viewmodel)
+
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization)
+            api(libs.kotlinx.datetime)
+
+            implementation(project.dependencies.platform(libs.koin.bom))
+            api(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.composeVM)
+            implementation(libs.koin.composeVM.navigation)
+            implementation(libs.koin.test)
+
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
+
+            implementation(libs.kermit)
+            implementation(libs.composables.core)
         }
     }
 }
@@ -64,16 +85,23 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    add("kspAndroid", libs.room.compiler)
+    add("kspIosSimulatorArm64", libs.room.compiler)
+    add("kspIosX64", libs.room.compiler)
+    add("kspIosArm64", libs.room.compiler)
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}

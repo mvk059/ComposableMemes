@@ -3,6 +3,7 @@ package fyi.manpreet.composablememes.database
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import fyi.manpreet.composablememes.data.database.MemeDatabase
+import fyi.manpreet.composablememes.data.database.prepopulateDatabase
 import fyi.manpreet.composablememes.di.DatabaseConstants
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +18,7 @@ fun geMemeDatabase(): MemeDatabase {
         name = dbFile,
     )
         .setDriver(BundledSQLiteDriver())
+        .addCallback(prepopulateDatabase())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
 }

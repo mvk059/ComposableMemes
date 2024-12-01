@@ -14,7 +14,7 @@ kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_21)
         }
     }
 
@@ -34,6 +34,14 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(compose.components.uiToolingPreview)
+
+            implementation(libs.koin.core)
+            implementation(libs.koin.android)
+            implementation(libs.koin.androidx.compose)
+
+            implementation(libs.androidx.core.splashscreen)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

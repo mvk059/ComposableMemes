@@ -1,0 +1,35 @@
+package fyi.manpreet.composablememes.data.mapper
+
+import fyi.manpreet.composablememes.data.database.MemeTable
+import fyi.manpreet.composablememes.data.model.Meme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
+
+fun Meme.toMemeTable(): MemeTable {
+    return MemeTable(
+        id = id,
+        imageUrl = imageUrl,
+        createdDateInMillis = createdDate.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
+        isFavorite = isFavorite,
+    )
+}
+
+fun List<Meme>.toMemeTable() =
+    map { meme -> meme.toMemeTable() }
+
+fun Flow<List<MemeTable>>.toMeme(): Flow<List<Meme>> {
+    return this.map { memeTableList ->
+        memeTableList.map { memeTable ->
+            Meme(
+                id = memeTable.id,
+                imageUrl = memeTable.imageUrl,
+                isFavorite = memeTable.isFavorite,
+                createdDate = Instant.fromEpochMilliseconds(memeTable.createdDateInMillis).toLocalDateTime(TimeZone.currentSystemDefault())
+            )
+        }
+    }
+}

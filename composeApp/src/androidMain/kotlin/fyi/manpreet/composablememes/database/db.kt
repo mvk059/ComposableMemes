@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import fyi.manpreet.composablememes.data.database.MemeDatabase
-import fyi.manpreet.composablememes.data.database.prepopulateDatabase
 import fyi.manpreet.composablememes.di.DatabaseConstants
 import kotlinx.coroutines.Dispatchers
 
@@ -15,7 +14,6 @@ fun getMemeDatabase(context: Context): MemeDatabase {
         name = dbFile.absolutePath
     )
         .setDriver(BundledSQLiteDriver())
-        .addCallback(prepopulateDatabase())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
 }

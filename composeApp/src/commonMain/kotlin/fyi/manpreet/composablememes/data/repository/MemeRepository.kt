@@ -6,9 +6,9 @@ interface MemeRepository {
 
     suspend fun insertMeme(meme: Meme)
 
-    fun getMemesSortedByFavorites(): List<Meme>
+    suspend fun getMemesSortedByFavorites(): List<Meme>
 
-    fun getMemesSortedByDate(): List<Meme>
+    suspend fun getMemesSortedByDate(): List<Meme>
 
     suspend fun updateMeme(meme: Meme)
 

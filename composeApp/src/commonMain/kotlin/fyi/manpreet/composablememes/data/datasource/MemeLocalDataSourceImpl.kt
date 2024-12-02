@@ -11,10 +11,10 @@ class MemeLocalDataSourceImpl(
         db.memeDao().insertMeme(meme = meme)
     }
 
-    override fun getMemesSortedByFavorites(): List<MemeTable> =
+    override suspend fun getMemesSortedByFavorites(): List<MemeTable> =
         db.memeDao().getMemesSortedByFavorites()
 
-    override fun getMemesSortedByDate(): List<MemeTable> = db.memeDao().getMemesSortedByDate()
+    override suspend fun getMemesSortedByDate(): List<MemeTable> = db.memeDao().getMemesSortedByDate()
 
     override suspend fun updateMeme(meme: MemeTable) {
         db.memeDao().updateMeme(meme = meme)

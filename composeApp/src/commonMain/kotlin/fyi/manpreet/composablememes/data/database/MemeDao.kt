@@ -18,10 +18,10 @@ interface MemeDao {
     suspend fun updateMeme(meme: MemeTable)
 
     @Query("SELECT * FROM ${DatabaseConstants.TABLE_NAME} ORDER BY isFavorite DESC, createdDateInMillis DESC")
-    fun getMemesSortedByFavorites(): List<MemeTable>
+    suspend fun getMemesSortedByFavorites(): List<MemeTable>
 
     @Query("SELECT * FROM ${DatabaseConstants.TABLE_NAME} ORDER BY createdDateInMillis DESC")
-    fun getMemesSortedByDate(): List<MemeTable>
+    suspend fun getMemesSortedByDate(): List<MemeTable>
 
     @Delete
     suspend fun deleteMemes(memes: List<MemeTable>)

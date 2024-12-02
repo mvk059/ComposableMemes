@@ -10,7 +10,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.composables.core.SheetDetent.Companion.FullyExpanded
+import com.composables.core.SheetDetent.Companion.Hidden
+import com.composables.core.rememberModalBottomSheetState
+import fyi.manpreet.composablememes.data.mapper.Peek
 import fyi.manpreet.composablememes.data.model.Meme
+import fyi.manpreet.composablememes.ui.home.components.bottomsheet.MemeListBottomSheet
 import fyi.manpreet.composablememes.ui.home.components.fab.HomeFloatingActionButton
 import fyi.manpreet.composablememes.ui.home.components.topbar.HomeTopBar
 
@@ -20,13 +25,20 @@ fun HomeScreen(
     memes: List<Meme>,
 ) {
 
+    val sheetState = rememberModalBottomSheetState(
+        initialDetent = Hidden,
+        detents = listOf(Hidden, Peek, FullyExpanded)
+    )
+
     Scaffold(
         modifier = modifier.background(color = MaterialTheme.colorScheme.surfaceContainerLowest),
         topBar = {
             HomeTopBar()
         },
         floatingActionButton = {
-            HomeFloatingActionButton()
+            HomeFloatingActionButton(
+                onClick = { sheetState.currentDetent = Peek }
+            )
         }
     ) {
 
@@ -56,5 +68,10 @@ fun HomeScreen(
         }
 
     }
+
+    MemeListBottomSheet(
+        sheetState = sheetState,
+        memes = memes,
+    )
 
 }

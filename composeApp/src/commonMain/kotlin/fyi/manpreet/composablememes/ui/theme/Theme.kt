@@ -13,6 +13,7 @@ fun MemeTheme(
     CompositionLocalProvider(
         LocalFixedAccentColors provides fixedAccentColors,
         LocalSpacing provides Spacing(),
+        LocalGradient provides Gradients(),
     ) {
 
         MaterialTheme(

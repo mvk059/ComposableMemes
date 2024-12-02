@@ -26,6 +26,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun HomeFloatingActionButton(
     modifier: Modifier = Modifier,
+    onClick: () -> Unit,
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -44,7 +45,7 @@ fun HomeFloatingActionButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = {}
+                onClick = onClick,
             ),
         contentAlignment = Alignment.Center,
     ) {

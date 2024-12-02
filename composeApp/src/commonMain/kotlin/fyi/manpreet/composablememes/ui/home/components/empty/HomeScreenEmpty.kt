@@ -1,4 +1,4 @@
-package fyi.manpreet.composablememes.ui.home
+package fyi.manpreet.composablememes.ui.home.components.empty
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

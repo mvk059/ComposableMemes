@@ -1,4 +1,4 @@
-package fyi.manpreet.composablememes.ui
+package fyi.manpreet.composablememes.ui.home
 
 import androidx.lifecycle.ViewModel
 import fyi.manpreet.composablememes.data.repository.MemeRepository

@@ -4,7 +4,7 @@ import fyi.manpreet.composablememes.data.datasource.MemeLocalDataSource
 import fyi.manpreet.composablememes.data.datasource.MemeLocalDataSourceImpl
 import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.data.repository.MemeRepositoryImpl
-import fyi.manpreet.composablememes.ui.HomeViewModel
+import fyi.manpreet.composablememes.ui.home.HomeViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf

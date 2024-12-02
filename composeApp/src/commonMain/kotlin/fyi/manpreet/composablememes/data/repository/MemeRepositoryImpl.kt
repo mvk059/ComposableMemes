@@ -4,7 +4,6 @@ import fyi.manpreet.composablememes.data.datasource.MemeLocalDataSource
 import fyi.manpreet.composablememes.data.mapper.toMeme
 import fyi.manpreet.composablememes.data.mapper.toMemeTable
 import fyi.manpreet.composablememes.data.model.Meme
-import kotlinx.coroutines.flow.Flow
 
 class MemeRepositoryImpl(
     private val localDataSource: MemeLocalDataSource,
@@ -14,10 +13,10 @@ class MemeRepositoryImpl(
         localDataSource.insertMeme(meme.toMemeTable())
     }
 
-    override fun getMemesSortedByFavorites(): Flow<List<Meme>> =
+    override fun getMemesSortedByFavorites(): List<Meme> =
         localDataSource.getMemesSortedByFavorites().toMeme()
 
-    override fun getMemesSortedByDate(): Flow<List<Meme>> =
+    override fun getMemesSortedByDate(): List<Meme> =
         localDataSource.getMemesSortedByDate().toMeme()
 
     override suspend fun deleteMemes(memes: List<Meme>) {

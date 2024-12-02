@@ -34,31 +34,31 @@ fun Typography(): Typography {
             fontFamily = manrope,
             fontWeight = FontWeight.SemiBold,
             fontSize = 22.sp,
-            lineHeight = 24.sp,
+            lineHeight = 30.sp,
         ),
         titleSmall = TextStyle(
             fontFamily = manrope,
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
-            lineHeight = 24.sp,
+            lineHeight = 22.sp,
         ),
         bodyLarge = TextStyle(
             fontFamily = manrope,
             fontWeight = FontWeight.Normal,
             fontSize = 20.sp,
-            lineHeight = 24.sp,
+            lineHeight = 28.sp,
         ),
         bodyMedium = TextStyle(
             fontFamily = manrope,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
-            lineHeight = 24.sp,
+            lineHeight = 22.sp,
         ),
         bodySmall = TextStyle(
             fontFamily = manrope,
             fontWeight = FontWeight.Normal,
             fontSize = 12.sp,
-            lineHeight = 24.sp
+            lineHeight = 16.sp
         ),
         labelSmall = TextStyle(
             fontFamily = manrope,

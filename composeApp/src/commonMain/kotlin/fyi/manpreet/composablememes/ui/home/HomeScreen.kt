@@ -20,13 +20,16 @@ import fyi.manpreet.composablememes.ui.home.components.empty.HomeScreenEmpty
 import fyi.manpreet.composablememes.ui.home.components.fab.HomeFloatingActionButton
 import fyi.manpreet.composablememes.ui.home.components.topbar.HomeTopBar
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
+import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     memes: List<Meme>,
-    allMemes: List<Meme>,
-    onEvent: (HomeEvent) -> Unit,
+    memeListBottomSheet: MemeListBottomSheet,
+    onFabClick: (HomeEvent.BottomSheetEvent) -> Unit,
+    toggleSearchModeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
+    onSearchTextChangeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -42,7 +45,7 @@ fun HomeScreen(
         floatingActionButton = {
             HomeFloatingActionButton(
                 onClick = {
-                    onEvent(HomeEvent.OnFabClick)
+                    onFabClick(HomeEvent.BottomSheetEvent.OnFabClick)
                     sheetState.currentDetent = Peek
                 }
             )
@@ -78,7 +81,13 @@ fun HomeScreen(
 
     MemeListBottomSheet(
         sheetState = sheetState,
-        memes = allMemes,
+        memeList = memeListBottomSheet.memes,
+        searchMode = memeListBottomSheet.isSearchMode,
+        toggleSearchMode = toggleSearchModeBottomSheet,
+        searchText = memeListBottomSheet.searchText,
+        onSearchTextChange = onSearchTextChangeBottomSheet,
+        inputPlaceHolder = memeListBottomSheet.placeholder,
+        memesListSize = memeListBottomSheet.memes.size,
     )
 
 }

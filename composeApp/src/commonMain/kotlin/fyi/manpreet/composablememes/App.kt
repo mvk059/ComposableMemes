@@ -19,8 +19,10 @@ fun App(
 
         HomeScreen(
             memes = emptyList(),
-            allMemes = allMemes.value,
-            onEvent = viewModel::onEvent
+            memeListBottomSheet = allMemes.value,
+            onFabClick = viewModel::onEvent,
+            toggleSearchModeBottomSheet = viewModel::onEvent,
+            onSearchTextChangeBottomSheet = viewModel::onEvent,
         )
     }
 }

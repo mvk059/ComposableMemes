@@ -8,6 +8,11 @@ data class Meme(
     val createdDate: LocalDateTime,
     val isFavorite: Boolean,
 ) {
+
+    fun checkImageNameCombinations(searchValue: String): Boolean {
+        return imageUrl.contains(searchValue, ignoreCase = true)
+    }
+
     companion object {
         const val INVALID_ID = 0L
     }

@@ -7,6 +7,9 @@
 
     <string name="home_bottom_sheet_choose_template_title">Choose template</string>
     <string name="home_bottom_sheet_choose_template_subtitle">Choose template for your next meme masterpiece</string>
+    <string name="home_bottom_sheet_input_placeholder">Search input</string>
+    <string name="home_bottom_sheet_input_list_size">%1$d templates</string>
+    <string name="home_bottom_sheet_input_no_memes_found">No memes found :(</string>
 
     <string name="meme_fab_cd">Add</string>
     <string name="meme_search_cd">Search</string>

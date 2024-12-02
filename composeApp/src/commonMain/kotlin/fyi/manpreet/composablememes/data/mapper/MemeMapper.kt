@@ -2,6 +2,7 @@ package fyi.manpreet.composablememes.data.mapper
 
 import fyi.manpreet.composablememes.data.database.MemeTable
 import fyi.manpreet.composablememes.data.model.Meme
+import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
@@ -36,12 +37,13 @@ fun Flow<List<MemeTable>>.toMeme(): Flow<List<Meme>> {
     }
 }
 
-fun Map<String, DrawableResource>.toMeme(): List<Meme> {
-    return this.map { (key, _) ->
+fun Map<String, DrawableResource>.toMemeListBottomSheet(): MemeListBottomSheet {
+    val memeList = this.map { (key, _) ->
         Meme(
             imageUrl = key,
             createdDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
             isFavorite = false
         )
     }
+    return MemeListBottomSheet(memes = memeList)
 }

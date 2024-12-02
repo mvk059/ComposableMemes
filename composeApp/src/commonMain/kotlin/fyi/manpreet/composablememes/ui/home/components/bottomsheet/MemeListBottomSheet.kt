@@ -111,7 +111,7 @@ private fun ColumnScope.ListContent(
 
         items(
             items = memeListBottomSheet,
-            key = { memes -> memes.imageUrl },
+            key = { memes -> memes.imageName },
         ) { meme ->
 
             MemeItem(

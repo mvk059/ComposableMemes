@@ -36,7 +36,7 @@ fun MemeItem(
 
         Image(
             modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(MaterialTheme.spacing.small)),
-            painter = painterResource(Res.allDrawableResources[meme.imageUrl]!!),
+            painter = painterResource(Res.allDrawableResources[meme.imageName]!!),
             contentDescription = null,
             contentScale = ContentScale.FillBounds
         )

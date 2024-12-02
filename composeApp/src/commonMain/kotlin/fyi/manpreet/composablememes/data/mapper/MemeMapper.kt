@@ -15,7 +15,7 @@ import org.jetbrains.compose.resources.DrawableResource
 fun Meme.toMemeTable(): MemeTable {
     return MemeTable(
         id = id,
-        imageUrl = imageUrl,
+        imageUrl = imageName,
         createdDateInMillis = createdDate.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
         isFavorite = isFavorite,
     )
@@ -29,7 +29,7 @@ fun Flow<List<MemeTable>>.toMeme(): Flow<List<Meme>> {
         memeTableList.map { memeTable ->
             Meme(
                 id = memeTable.id,
-                imageUrl = memeTable.imageUrl,
+                imageName = memeTable.imageUrl,
                 isFavorite = memeTable.isFavorite,
                 createdDate = Instant.fromEpochMilliseconds(memeTable.createdDateInMillis).toLocalDateTime(TimeZone.currentSystemDefault())
             )
@@ -40,7 +40,7 @@ fun Flow<List<MemeTable>>.toMeme(): Flow<List<Meme>> {
 fun Map<String, DrawableResource>.toMemeListBottomSheet(): MemeListBottomSheet {
     val memeList = this.map { (key, _) ->
         Meme(
-            imageUrl = key,
+            imageName = key,
             createdDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
             isFavorite = false
         )

@@ -64,7 +64,7 @@ fun HomeScreen(
 
             items(
                 items = memes,
-                key = { memes -> memes.imageUrl },
+                key = { memes -> memes.imageName },
             ) { meme ->
 
 //                Image(

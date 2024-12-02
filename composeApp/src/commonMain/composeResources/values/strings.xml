@@ -11,6 +11,11 @@
     <string name="home_bottom_sheet_input_list_size">%1$d templates</string>
     <string name="home_bottom_sheet_input_no_memes_found">No memes found :(</string>
 
+    <string name="home_sort_favorite_first">Favorite First</string>
+    <string name="home_sort_newest_first">Newest First</string>
+
+
     <string name="meme_fab_cd">Add</string>
     <string name="meme_search_cd">Search</string>
+    <string name="meme_sort_cd">Toggle the sort menu</string>
 </resources>

@@ -14,26 +14,27 @@ import com.composables.core.SheetDetent.Companion.FullyExpanded
 import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
 import fyi.manpreet.composablememes.data.mapper.Peek
-import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.home.components.bottomsheet.MemeListBottomSheet
 import fyi.manpreet.composablememes.ui.home.components.empty.HomeScreenEmpty
 import fyi.manpreet.composablememes.ui.home.components.fab.HomeFloatingActionButton
 import fyi.manpreet.composablememes.ui.home.components.item.MemeItem
 import fyi.manpreet.composablememes.ui.home.components.topbar.HomeTopBar
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
+import fyi.manpreet.composablememes.ui.home.state.HomeState
 import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
 import fyi.manpreet.composablememes.ui.theme.spacing
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    memes: List<Meme>,
+    homeState: HomeState,
     memeListBottomSheet: MemeListBottomSheet,
     onFabClick: (HomeEvent.BottomSheetEvent) -> Unit,
     toggleSearchModeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
     onSearchTextChangeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
     onMemeSelected: (HomeEvent.BottomSheetEvent) -> Unit,
     onFavoriteClick: (HomeEvent.MemeListEvent) -> Unit,
+    onSelectedSortType: (HomeEvent.MemeListEvent) -> Unit,
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -48,7 +49,12 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier.background(color = MaterialTheme.colorScheme.surfaceContainerLowest),
         topBar = {
-            HomeTopBar()
+            HomeTopBar(
+                isSelectionMode = homeState.isSelectionMode,
+                sortTypes = homeState.sortTypes,
+                selectedSortType = homeState.selectedSortType,
+                onSelectedSortType = onSelectedSortType,
+            )
         },
         floatingActionButton = {
             HomeFloatingActionButton(
@@ -60,7 +66,7 @@ fun HomeScreen(
         }
     ) {
 
-        if (memes.isEmpty()) {
+        if (homeState.memes.isEmpty()) {
             HomeScreenEmpty()
             return@Scaffold
         }
@@ -71,7 +77,7 @@ fun HomeScreen(
         ) {
 
             items(
-                items = memes,
+                items = homeState.memes,
                 key = { memes -> memes.id },
             ) { meme ->
 

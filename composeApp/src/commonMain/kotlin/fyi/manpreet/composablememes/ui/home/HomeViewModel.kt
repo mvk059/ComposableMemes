@@ -8,6 +8,7 @@ import fyi.manpreet.composablememes.data.mapper.toMemeListBottomSheet
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
+import fyi.manpreet.composablememes.ui.home.state.HomeState
 import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -25,13 +26,13 @@ class HomeViewModel(
     private val repository: MemeRepository,
 ) : ViewModel() {
 
-    private val _memeList = MutableStateFlow(emptyList<Meme>())
-    val memeList = _memeList
-        .onStart { getMemesSortedByFavorites() }
+    private val _homeState = MutableStateFlow(HomeState())
+    val homeState = _homeState
+        .onStart { initHomeState() }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000L),
-            emptyList()
+            HomeState()
         )
 
     private val _searchTextBottomSheet = MutableStateFlow("")
@@ -65,8 +66,16 @@ class HomeViewModel(
             HomeEvent.BottomSheetEvent.OnFabClick -> onFabClick()
             is HomeEvent.BottomSheetEvent.OnSearchModeChange -> onBottomSheetSearchModeChange(event.value)
             is HomeEvent.BottomSheetEvent.OnSearchTextChange -> onBottomSheetSearchTextChange(event.text)
-            is HomeEvent.BottomSheetEvent.OnMemeSelect -> onMemeClick(event.meme)
+            is HomeEvent.BottomSheetEvent.OnMemeSelect -> onBottomSheetMemeClick(event.meme)
             is HomeEvent.MemeListEvent.OnMemeFavorite -> onMemeFavoriteClick(event.id)
+            is HomeEvent.MemeListEvent.OnSortSelect -> onSortSelect(event.sortType)
+        }
+    }
+
+    private fun initHomeState() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val selectedMemes = repository.getMemesSortedByFavorites()
+            _homeState.update { it.copy(memes = selectedMemes) }
         }
     }
 
@@ -88,27 +97,35 @@ class HomeViewModel(
         _searchTextBottomSheet.update { text }
     }
 
-    private fun onMemeClick(meme: Meme) {
+    private fun onBottomSheetMemeClick(meme: Meme) {
         resetSearchText()
         viewModelScope.launch(Dispatchers.IO) {
             repository.insertMeme(meme)
-            getMemesSortedByFavorites()
-        }
-    }
-
-    private fun getMemesSortedByFavorites() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val selectedMemes = repository. getMemesSortedByFavorites()
-            _memeList.update { selectedMemes }
+            updateList(sortType = _homeState.value.selectedSortType)
         }
     }
 
     private fun onMemeFavoriteClick(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            val meme = _memeList.value.first { it.id == id }
+            val meme = _homeState.value.memes.first { it.id == id }
             val updatedMeme = meme.copy(isFavorite = meme.isFavorite.not())
             repository.updateMeme(updatedMeme)
-            getMemesSortedByFavorites()
+            updateList(sortType = _homeState.value.selectedSortType)
+        }
+    }
+
+    private fun onSortSelect(sortType: HomeState.SortTypes) {
+        _homeState.update { it.copy(selectedSortType = sortType) }
+        updateList(sortType = sortType)
+    }
+
+    private fun updateList(sortType: HomeState.SortTypes) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val selectedMemes = when (sortType) {
+                is HomeState.SortTypes.Favorites -> repository.getMemesSortedByFavorites()
+                is HomeState.SortTypes.DateAdded -> repository.getMemesSortedByDate()
+            }
+            _homeState.update { it.copy(memes = selectedMemes) }
         }
     }
 

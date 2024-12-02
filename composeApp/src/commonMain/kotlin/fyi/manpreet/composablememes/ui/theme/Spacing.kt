@@ -20,6 +20,7 @@ data class Spacing(
     val fabContainerHeight: Dp = 56.dp,
     val listItemWidth: Dp = 176.dp,
     val listItemHeight: Dp = 176.dp,
+    val sortFilterSize: Dp = 120.dp,
 )
 
 val LocalSpacing = staticCompositionLocalOf { Spacing() }

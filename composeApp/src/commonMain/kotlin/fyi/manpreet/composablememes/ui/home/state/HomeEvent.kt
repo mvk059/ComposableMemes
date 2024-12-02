@@ -13,6 +13,7 @@ sealed interface HomeEvent {
 
     sealed interface MemeListEvent : HomeEvent {
         data class OnMemeFavorite(val id: Long) : MemeListEvent
+        data class OnSortSelect(val sortType: HomeState.SortTypes) : MemeListEvent
     }
 
 }

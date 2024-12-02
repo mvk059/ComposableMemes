@@ -5,22 +5,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import composablememes.composeapp.generated.resources.Res
-import composablememes.composeapp.generated.resources.home_appbar_title
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.home.components.fab.HomeFloatingActionButton
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.stringResource
+import fyi.manpreet.composablememes.ui.home.components.topbar.HomeTopBar
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -30,13 +23,7 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier.background(color = MaterialTheme.colorScheme.surfaceContainerLowest),
         topBar = {
-            TopAppBar(
-                modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceContainerLow),
-                title = {
-                    Text(stringResource(Res.string.home_appbar_title))
-                },
-                actions = {}
-            )
+            HomeTopBar()
         },
         floatingActionButton = {
             HomeFloatingActionButton()

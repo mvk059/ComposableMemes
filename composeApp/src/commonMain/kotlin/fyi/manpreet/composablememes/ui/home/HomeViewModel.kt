@@ -66,6 +66,7 @@ class HomeViewModel(
             is HomeEvent.BottomSheetEvent.OnSearchModeChange -> onBottomSheetSearchModeChange(event.value)
             is HomeEvent.BottomSheetEvent.OnSearchTextChange -> onBottomSheetSearchTextChange(event.text)
             is HomeEvent.BottomSheetEvent.OnMemeSelect -> onMemeClick(event.meme)
+            is HomeEvent.MemeListEvent.OnMemeFavorite -> onMemeFavoriteClick(event.id)
         }
     }
 
@@ -97,8 +98,17 @@ class HomeViewModel(
 
     private fun getMemesSortedByFavorites() {
         viewModelScope.launch(Dispatchers.IO) {
-            val selectedMemes = repository.getMemesSortedByFavorites()
+            val selectedMemes = repository. getMemesSortedByFavorites()
             _memeList.update { selectedMemes }
+        }
+    }
+
+    private fun onMemeFavoriteClick(id: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val meme = _memeList.value.first { it.id == id }
+            val updatedMeme = meme.copy(isFavorite = meme.isFavorite.not())
+            repository.updateMeme(updatedMeme)
+            getMemesSortedByFavorites()
         }
     }
 

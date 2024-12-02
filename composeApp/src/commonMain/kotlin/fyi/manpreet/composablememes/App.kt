@@ -25,6 +25,7 @@ fun App(
             toggleSearchModeBottomSheet = viewModel::onEvent,
             onSearchTextChangeBottomSheet = viewModel::onEvent,
             onMemeSelected = viewModel::onEvent,
+            onFavoriteClick = viewModel::onEvent,
         )
     }
 }

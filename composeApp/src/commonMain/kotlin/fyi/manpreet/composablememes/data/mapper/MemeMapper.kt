@@ -12,6 +12,7 @@ import org.jetbrains.compose.resources.DrawableResource
 
 fun Meme.toMemeTable(): MemeTable {
     return MemeTable(
+        id = id,
         imageUrl = imageName,
         createdDateInMillis = createdDate.toInstant(TimeZone.currentSystemDefault())
             .toEpochMilliseconds(),

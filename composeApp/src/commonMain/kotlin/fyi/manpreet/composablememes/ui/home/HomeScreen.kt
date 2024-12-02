@@ -33,6 +33,7 @@ fun HomeScreen(
     toggleSearchModeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
     onSearchTextChangeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
     onMemeSelected: (HomeEvent.BottomSheetEvent) -> Unit,
+    onFavoriteClick: (HomeEvent.MemeListEvent) -> Unit,
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -77,6 +78,8 @@ fun HomeScreen(
                 MemeItem(
                     modifier = Modifier.clickable {},
                     meme = meme,
+                    shouldShowFavorite = true,
+                    onFavoriteClick = onFavoriteClick,
                 )
             }
 

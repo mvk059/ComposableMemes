@@ -11,4 +11,8 @@ sealed interface HomeEvent {
         data class OnMemeSelect(val meme: Meme) : BottomSheetEvent
     }
 
+    sealed interface MemeListEvent : HomeEvent {
+        data class OnMemeFavorite(val id: Long) : MemeListEvent
+    }
+
 }

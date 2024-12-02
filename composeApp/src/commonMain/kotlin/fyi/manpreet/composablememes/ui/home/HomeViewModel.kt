@@ -64,14 +64,19 @@ class HomeViewModel(
             .filter { it.key.endsWith("Meme") }
             .toMemeListBottomSheet()
         _allMemesList.update { allMemes }
+        resetSearchText()
     }
 
     private fun onBottomSheetSearchModeChange(value: Boolean) {
-        _searchTextBottomSheet.update { "" }
         _allMemesList.update { it.copy(isSearchMode = value) }
+        resetSearchText()
     }
 
     private fun onBottomSheetSearchTextChange(text: String) {
         _searchTextBottomSheet.update { text }
+    }
+
+    private fun resetSearchText() {
+        _searchTextBottomSheet.update { "" }
     }
 }

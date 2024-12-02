@@ -19,11 +19,14 @@ import fyi.manpreet.composablememes.ui.home.components.bottomsheet.MemeListBotto
 import fyi.manpreet.composablememes.ui.home.components.empty.HomeScreenEmpty
 import fyi.manpreet.composablememes.ui.home.components.fab.HomeFloatingActionButton
 import fyi.manpreet.composablememes.ui.home.components.topbar.HomeTopBar
+import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     memes: List<Meme>,
+    allMemes: List<Meme>,
+    onEvent: (HomeEvent) -> Unit,
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -38,7 +41,10 @@ fun HomeScreen(
         },
         floatingActionButton = {
             HomeFloatingActionButton(
-                onClick = { sheetState.currentDetent = Peek }
+                onClick = {
+                    onEvent(HomeEvent.OnFabClick)
+                    sheetState.currentDetent = Peek
+                }
             )
         }
     ) {
@@ -72,7 +78,7 @@ fun HomeScreen(
 
     MemeListBottomSheet(
         sheetState = sheetState,
-        memes = memes,
+        memes = allMemes,
     )
 
 }

@@ -4,10 +4,12 @@ import fyi.manpreet.composablememes.data.database.MemeTable
 import fyi.manpreet.composablememes.data.model.Meme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.DrawableResource
 
 fun Meme.toMemeTable(): MemeTable {
     return MemeTable(
@@ -31,5 +33,15 @@ fun Flow<List<MemeTable>>.toMeme(): Flow<List<Meme>> {
                 createdDate = Instant.fromEpochMilliseconds(memeTable.createdDateInMillis).toLocalDateTime(TimeZone.currentSystemDefault())
             )
         }
+    }
+}
+
+fun Map<String, DrawableResource>.toMeme(): List<Meme> {
+    return this.map { (key, _) ->
+        Meme(
+            imageUrl = key,
+            createdDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+            isFavorite = false
+        )
     }
 }

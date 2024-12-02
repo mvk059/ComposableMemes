@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="app_name">Composable Memes</string>
+
+    <string name="home_appbar_title">Your memes</string>
+    <string name="home_add_meme">Tap + button to create your first meme</string>
+
+    <string name="meme_fab_cd">Add</string>
+</resources>

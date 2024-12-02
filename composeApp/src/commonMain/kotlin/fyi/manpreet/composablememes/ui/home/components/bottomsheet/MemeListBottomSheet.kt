@@ -1,6 +1,7 @@
 package fyi.manpreet.composablememes.ui.home.components.bottomsheet
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -39,16 +40,19 @@ fun MemeListBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: ModalBottomSheetState,
     memeList: List<Meme>,
+    onMemeSelected: (HomeEvent.BottomSheetEvent) -> Unit,
     searchMode: Boolean,
     toggleSearchMode: (HomeEvent.BottomSheetEvent) -> Unit,
     searchText: String,
     onSearchTextChange: (HomeEvent.BottomSheetEvent) -> Unit,
     inputPlaceHolder: StringResource,
     memesListSize: Int,
+    onDismiss: () -> Unit,
 ) {
 
     ModalBottomSheet(
         state = sheetState,
+        onDismiss = onDismiss,
     ) {
         Sheet(
             modifier = modifier
@@ -91,7 +95,10 @@ fun MemeListBottomSheet(
                         memesListSize = memesListSize,
                     )
 
-                    ListContent(memeListBottomSheet = memeList)
+                    ListContent(
+                        memeList = memeList,
+                        onMemeSelected = onMemeSelected,
+                    )
                 }
             }
         }
@@ -101,7 +108,8 @@ fun MemeListBottomSheet(
 @Composable
 private fun ColumnScope.ListContent(
     modifier: Modifier = Modifier,
-    memeListBottomSheet: List<Meme>,
+    memeList: List<Meme>,
+    onMemeSelected: (HomeEvent.BottomSheetEvent) -> Unit,
 ) {
 
     LazyVerticalGrid(
@@ -110,11 +118,14 @@ private fun ColumnScope.ListContent(
     ) {
 
         items(
-            items = memeListBottomSheet,
+            items = memeList,
             key = { memes -> memes.imageName },
         ) { meme ->
 
             MemeItem(
+                modifier = Modifier.clickable {
+                    onMemeSelected(HomeEvent.BottomSheetEvent.OnMemeSelect(meme))
+                },
                 meme = meme,
             )
         }

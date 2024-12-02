@@ -13,16 +13,18 @@ import org.koin.compose.viewmodel.koinViewModel
 fun App(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
+    val memeList = viewModel.memeList.collectAsStateWithLifecycle()
     val allMemes = viewModel.allMemesList.collectAsStateWithLifecycle()
 
     MemeTheme {
 
         HomeScreen(
-            memes = emptyList(),
+            memes = memeList.value,
             memeListBottomSheet = allMemes.value,
             onFabClick = viewModel::onEvent,
             toggleSearchModeBottomSheet = viewModel::onEvent,
             onSearchTextChangeBottomSheet = viewModel::onEvent,
+            onMemeSelected = viewModel::onEvent,
         )
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
@@ -22,6 +23,7 @@ import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.allDrawableResources
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
+import fyi.manpreet.composablememes.ui.icon.CircleIcon
 import fyi.manpreet.composablememes.ui.theme.gradient
 import fyi.manpreet.composablememes.ui.theme.spacing
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -33,7 +35,9 @@ fun MemeItem(
     modifier: Modifier = Modifier,
     meme: Meme,
     shouldShowFavorite: Boolean = false,
+    shouldShowSelection: Boolean = false,
     onFavoriteClick: (HomeEvent.MemeListEvent) -> Unit = {},
+    onSelectClick: (HomeEvent.MemeListEvent) -> Unit = {},
 ) {
 
     Box(
@@ -65,6 +69,23 @@ fun MemeItem(
                     .padding(MaterialTheme.spacing.small)
                     .clickable { onFavoriteClick(HomeEvent.MemeListEvent.OnMemeFavorite(meme.id)) },
                 imageVector = if (meme.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primaryContainer,
+            )
+        }
+
+        if (shouldShowSelection) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(brush = MaterialTheme.gradient.selection)
+            )
+            Icon(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(MaterialTheme.spacing.small)
+                    .clickable { onSelectClick(HomeEvent.MemeListEvent.OnMemeSelect(meme.id)) },
+                imageVector = if (meme.isSelected) Icons.Default.CheckCircle else CircleIcon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primaryContainer,
             )

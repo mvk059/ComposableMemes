@@ -2,6 +2,7 @@ package fyi.manpreet.composablememes.ui.home.components.topbar
 
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -13,6 +14,9 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,10 +46,14 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun HomeTopBar(
     modifier: Modifier = Modifier,
+    selectedItems: Int,
     isSelectionMode: Boolean,
     sortTypes: List<HomeState.SortTypes>,
     selectedSortType: HomeState.SortTypes,
-    onSelectedSortType: (HomeEvent.MemeListEvent) -> Unit,
+    onSelectedSortType: (HomeEvent.TopBarEvent) -> Unit,
+    onCancelClick: (HomeEvent.TopBarEvent) -> Unit,
+    onShareClick: (HomeEvent.TopBarEvent) -> Unit,
+    onDeleteClick: (HomeEvent.TopBarEvent) -> Unit,
 ) {
 
     TopAppBar(
@@ -55,7 +63,12 @@ fun HomeTopBar(
         },
         actions = {
             if (isSelectionMode) {
-
+                SelectionMode(
+                    selectedItems = selectedItems,
+                    onCancelClick = onCancelClick,
+                    onShareClick = onShareClick,
+                    onDeleteClick = onDeleteClick,
+                )
             } else {
                 SortDropdown(
                     sortItems = sortTypes,
@@ -69,11 +82,58 @@ fun HomeTopBar(
 }
 
 @Composable
-fun RowScope.SortDropdown(
+private fun RowScope.SelectionMode(
+    selectedItems: Int,
+    onCancelClick: (HomeEvent.TopBarEvent) -> Unit,
+    onShareClick: (HomeEvent.TopBarEvent) -> Unit,
+    onDeleteClick: (HomeEvent.TopBarEvent) -> Unit,
+) {
+
+    Icon(
+        modifier = Modifier
+            .padding(horizontal = MaterialTheme.spacing.medium)
+            .clickable { onCancelClick(HomeEvent.TopBarEvent.OnCancel) },
+        imageVector = Icons.Default.Close,
+        contentDescription = null,
+        tint = MaterialTheme.fixedAccentColors.secondaryFixedDim,
+    )
+
+    Text(
+        modifier = Modifier.padding(horizontal = MaterialTheme.spacing.small),
+        text = selectedItems.toString(),
+        style = MaterialTheme.typography.titleLarge.copy(
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    )
+
+    Spacer(Modifier.weight(1f))
+
+    Icon(
+        modifier = Modifier
+            .padding(horizontal = MaterialTheme.spacing.medium)
+            .clickable { onShareClick(HomeEvent.TopBarEvent.OnShare) },
+        imageVector = Icons.Default.Share,
+        contentDescription = null,
+        tint = MaterialTheme.fixedAccentColors.secondaryFixedDim,
+    )
+
+    Icon(
+        modifier = Modifier
+            .padding(horizontal = MaterialTheme.spacing.medium)
+            .clickable { onDeleteClick(HomeEvent.TopBarEvent.OnDelete) },
+        imageVector = Icons.Outlined.Delete,
+        contentDescription = null,
+        tint = MaterialTheme.fixedAccentColors.secondaryFixedDim,
+    )
+
+}
+
+@Composable
+private fun RowScope.SortDropdown(
     modifier: Modifier = Modifier,
     sortItems: List<HomeState.SortTypes>,
     selectedSortType: HomeState.SortTypes,
-    onSelectedSortType: (HomeEvent.MemeListEvent) -> Unit,
+    onSelectedSortType: (HomeEvent.TopBarEvent) -> Unit,
 ) {
     val state = rememberMenuState(expanded = false)
 
@@ -116,7 +176,7 @@ fun RowScope.SortDropdown(
 
                     MenuItem(
                         modifier = Modifier.clip(RoundedCornerShape(MaterialTheme.spacing.extraSmall)),
-                        onClick = { onSelectedSortType(HomeEvent.MemeListEvent.OnSortSelect(item)) }
+                        onClick = { onSelectedSortType(HomeEvent.TopBarEvent.OnSortSelect(item)) }
                     ) {
                         val text = when (item) {
                             is HomeState.SortTypes.Favorites -> stringResource(Res.string.home_sort_favorite_first)

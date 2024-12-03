@@ -1,7 +1,7 @@
 package fyi.manpreet.composablememes.ui.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import com.composables.core.SheetDetent.Companion.FullyExpanded
 import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
@@ -34,7 +35,12 @@ fun HomeScreen(
     onSearchTextChangeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
     onMemeSelected: (HomeEvent.BottomSheetEvent) -> Unit,
     onFavoriteClick: (HomeEvent.MemeListEvent) -> Unit,
-    onSelectedSortType: (HomeEvent.MemeListEvent) -> Unit,
+    onSelectClick: (HomeEvent.MemeListEvent) -> Unit = {},
+    onEnterSelectionMode: (HomeEvent.MemeListEvent) -> Unit = {},
+    onSelectedSortType: (HomeEvent.TopBarEvent) -> Unit,
+    onCancelClick: (HomeEvent.TopBarEvent) -> Unit,
+    onShareClick: (HomeEvent.TopBarEvent) -> Unit,
+    onDeleteClick: (HomeEvent.TopBarEvent) -> Unit,
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -51,9 +57,13 @@ fun HomeScreen(
         topBar = {
             HomeTopBar(
                 isSelectionMode = homeState.isSelectionMode,
+                selectedItems = homeState.selectedItemsSize,
                 sortTypes = homeState.sortTypes,
                 selectedSortType = homeState.selectedSortType,
                 onSelectedSortType = onSelectedSortType,
+                onCancelClick = onCancelClick,
+                onShareClick = onShareClick,
+                onDeleteClick = onDeleteClick,
             )
         },
         floatingActionButton = {
@@ -82,15 +92,28 @@ fun HomeScreen(
             ) { meme ->
 
                 MemeItem(
-                    modifier = Modifier.clickable {},
+                    modifier = Modifier.pointerInput(Unit) {
+                        detectTapGestures(
+                            onLongPress = {
+                                onEnterSelectionMode(
+                                    HomeEvent.MemeListEvent.OnEnterSelectionMode(
+                                        meme.id
+                                    )
+                                )
+                            },
+                            onTap = {
+                                onSelectClick(HomeEvent.MemeListEvent.OnMemeSelect(meme.id))
+                            }
+                        )
+                    },
                     meme = meme,
-                    shouldShowFavorite = true,
+                    shouldShowFavorite = homeState.isSelectionMode.not(),
+                    shouldShowSelection = homeState.isSelectionMode,
                     onFavoriteClick = onFavoriteClick,
+                    onSelectClick = onSelectClick,
                 )
             }
-
         }
-
     }
 
     MemeListBottomSheet(

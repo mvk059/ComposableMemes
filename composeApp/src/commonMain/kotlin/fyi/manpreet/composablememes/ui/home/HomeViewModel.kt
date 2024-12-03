@@ -68,7 +68,12 @@ class HomeViewModel(
             is HomeEvent.BottomSheetEvent.OnSearchTextChange -> onBottomSheetSearchTextChange(event.text)
             is HomeEvent.BottomSheetEvent.OnMemeSelect -> onBottomSheetMemeClick(event.meme)
             is HomeEvent.MemeListEvent.OnMemeFavorite -> onMemeFavoriteClick(event.id)
-            is HomeEvent.MemeListEvent.OnSortSelect -> onSortSelect(event.sortType)
+            is HomeEvent.MemeListEvent.OnMemeSelect -> onMemeSelect(event.id)
+            is HomeEvent.MemeListEvent.OnEnterSelectionMode -> onEnterSelectionMode(event.id)
+            is HomeEvent.TopBarEvent.OnSortSelect -> onSortSelect(event.sortType)
+            is HomeEvent.TopBarEvent.OnCancel -> onCancel()
+            is HomeEvent.TopBarEvent.OnShare -> onShare()
+            is HomeEvent.TopBarEvent.OnDelete -> onDelete()
         }
     }
 
@@ -114,10 +119,53 @@ class HomeViewModel(
         }
     }
 
+    private fun onMemeSelect(id: Long) {
+        if (!_homeState.value.isSelectionMode) return
+
+        val memes = _homeState.value.memes.map {
+            if (it.id == id) it.copy(isSelected = it.isSelected.not())
+            else it
+        }
+        val selectedMemesSize = memes.filter { it.isSelected }.size
+        val isSelectionMode = selectedMemesSize > 0
+        _homeState.update {
+            it.copy(
+                memes = memes,
+                isSelectionMode = isSelectionMode,
+                selectedItemsSize = selectedMemesSize
+            )
+        }
+    }
+
     private fun onSortSelect(sortType: HomeState.SortTypes) {
         _homeState.update { it.copy(selectedSortType = sortType) }
         updateList(sortType = sortType)
     }
+
+    private fun onEnterSelectionMode(id: Long) {
+        if (_homeState.value.isSelectionMode) return
+        _homeState.update { it.copy(isSelectionMode = true) }
+        onMemeSelect(id)
+    }
+
+    private fun onCancel() {
+        val memes = _homeState.value.memes.map { it.copy(isSelected = false) }
+        _homeState.update { it.copy(memes = memes, isSelectionMode = false, selectedItemsSize = 0) }
+    }
+
+    private fun onShare() {
+
+    }
+
+    private fun onDelete() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val memes = _homeState.value.memes.filter { it.isSelected }
+            repository.deleteMemes(memes)
+            onCancel()
+            updateList(sortType = _homeState.value.selectedSortType)
+        }
+    }
+
 
     private fun updateList(sortType: HomeState.SortTypes) {
         viewModelScope.launch(Dispatchers.IO) {

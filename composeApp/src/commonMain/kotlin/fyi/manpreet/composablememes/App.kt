@@ -26,7 +26,12 @@ fun App(
             onSearchTextChangeBottomSheet = viewModel::onEvent,
             onMemeSelected = viewModel::onEvent,
             onFavoriteClick = viewModel::onEvent,
+            onSelectClick = viewModel::onEvent,
+            onEnterSelectionMode = viewModel::onEvent,
             onSelectedSortType = viewModel::onEvent,
+            onCancelClick = viewModel::onEvent,
+            onShareClick = viewModel::onEvent,
+            onDeleteClick = viewModel::onEvent,
         )
     }
 }

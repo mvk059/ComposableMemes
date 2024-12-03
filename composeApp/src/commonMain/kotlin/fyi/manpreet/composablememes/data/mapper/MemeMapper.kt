@@ -28,9 +28,10 @@ fun List<MemeTable>.toMeme(): List<Meme> {
         Meme(
             id = memeTable.id,
             imageName = memeTable.imageUrl,
-            isFavorite = memeTable.isFavorite,
             createdDate = Instant.fromEpochMilliseconds(memeTable.createdDateInMillis)
-                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .toLocalDateTime(TimeZone.currentSystemDefault()),
+            isFavorite = memeTable.isFavorite,
+            isSelected = false,
         )
     }
 }
@@ -40,7 +41,8 @@ fun Map<String, DrawableResource>.toMemeListBottomSheet(): MemeListBottomSheet {
         Meme(
             imageName = key,
             createdDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-            isFavorite = false
+            isFavorite = false,
+            isSelected = false,
         )
     }
     return MemeListBottomSheet(memes = memeList)

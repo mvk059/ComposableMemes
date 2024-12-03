@@ -34,16 +34,16 @@ fun HomeScreen(
     onFabClick: (HomeEvent.BottomSheetEvent) -> Unit,
     toggleSearchModeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
     onSearchTextChangeBottomSheet: (HomeEvent.BottomSheetEvent) -> Unit,
-    onMemeSelected: (HomeEvent.BottomSheetEvent) -> Unit,
+    onMemeSelectBottomSheet: (HomeEvent.BottomSheetEvent.OnMemeSelect) -> Unit,
     onFavoriteClick: (HomeEvent.MemeListEvent) -> Unit,
     onSelectClick: (HomeEvent.MemeListEvent) -> Unit = {},
     onEnterSelectionMode: (HomeEvent.MemeListEvent) -> Unit = {},
     onSelectedSortType: (HomeEvent.TopBarEvent) -> Unit,
-    onCancelClick: (HomeEvent.TopBarEvent) -> Unit,
-    onShareClick: (HomeEvent.TopBarEvent) -> Unit,
-    onDeleteClick: (HomeEvent.TopBarEvent) -> Unit,
-    onDialogCancel: (HomeEvent.TopBarEvent) -> Unit,
-    onDialogDelete: (HomeEvent.TopBarEvent) -> Unit
+    onCancelClickTopBar: (HomeEvent.TopBarEvent) -> Unit,
+    onShareClickTopBar: (HomeEvent.TopBarEvent) -> Unit,
+    onDeleteClickTopBar: (HomeEvent.TopBarEvent) -> Unit,
+    onCancelClickDialog: (HomeEvent.TopBarEvent) -> Unit,
+    onDeleteClickDialog: (HomeEvent.TopBarEvent) -> Unit
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -64,9 +64,9 @@ fun HomeScreen(
                 sortTypes = homeState.sortTypes,
                 selectedSortType = homeState.selectedSortType,
                 onSelectedSortType = onSelectedSortType,
-                onCancelClick = onCancelClick,
-                onShareClick = onShareClick,
-                onDeleteClick = onDeleteClick,
+                onCancelClick = onCancelClickTopBar,
+                onShareClick = onShareClickTopBar,
+                onDeleteClick = onDeleteClickTopBar,
             )
         },
         floatingActionButton = {
@@ -123,7 +123,7 @@ fun HomeScreen(
         sheetState = sheetState,
         memeList = memeListBottomSheet.memes,
         onMemeSelected = {
-            onMemeSelected(it)
+            onMemeSelectBottomSheet(it)
             dismissBottomSheet()
         },
         searchMode = memeListBottomSheet.isSearchMode,
@@ -138,8 +138,8 @@ fun HomeScreen(
     DeleteDialog(
         isVisible = homeState.isDeleteDialogVisible,
         selectedItems = homeState.selectedItemsSize,
-        onDelete = onDialogDelete,
-        onCancel = onDialogCancel
+        onDelete = onDeleteClickDialog,
+        onCancel = onCancelClickDialog
     )
 
 }

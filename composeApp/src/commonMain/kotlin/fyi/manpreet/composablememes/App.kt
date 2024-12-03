@@ -60,6 +60,7 @@ fun App(
                 val args = it.toRoute<MemeDestination>()
                 MemeScreen(
                     memeId = args.memeId,
+                    navigateBack = { navController.navigateUp() }
                 )
             }
         }

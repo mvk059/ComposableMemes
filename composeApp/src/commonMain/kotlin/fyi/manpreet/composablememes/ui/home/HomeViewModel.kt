@@ -105,6 +105,7 @@ class HomeViewModel(
 
     private fun onBottomSheetMemeClick(meme: Meme) {
         resetSearchText()
+        return
         viewModelScope.launch(Dispatchers.IO) {
             repository.insertMeme(meme)
             updateList(sortType = _homeState.value.selectedSortType)

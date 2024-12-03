@@ -16,6 +16,7 @@ import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
 import fyi.manpreet.composablememes.data.mapper.Peek
 import fyi.manpreet.composablememes.ui.home.components.bottomsheet.MemeListBottomSheet
+import fyi.manpreet.composablememes.ui.home.components.delete.DeleteDialog
 import fyi.manpreet.composablememes.ui.home.components.empty.HomeScreenEmpty
 import fyi.manpreet.composablememes.ui.home.components.fab.HomeFloatingActionButton
 import fyi.manpreet.composablememes.ui.home.components.item.MemeItem
@@ -41,6 +42,8 @@ fun HomeScreen(
     onCancelClick: (HomeEvent.TopBarEvent) -> Unit,
     onShareClick: (HomeEvent.TopBarEvent) -> Unit,
     onDeleteClick: (HomeEvent.TopBarEvent) -> Unit,
+    onDialogCancel: (HomeEvent.TopBarEvent) -> Unit,
+    onDialogDelete: (HomeEvent.TopBarEvent) -> Unit
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -130,6 +133,13 @@ fun HomeScreen(
         inputPlaceHolder = memeListBottomSheet.placeholder,
         memesListSize = memeListBottomSheet.memes.size,
         onDismiss = ::dismissBottomSheet
+    )
+
+    DeleteDialog(
+        isVisible = homeState.isDeleteDialogVisible,
+        selectedItems = homeState.selectedItemsSize,
+        onDelete = onDialogDelete,
+        onCancel = onDialogCancel
     )
 
 }

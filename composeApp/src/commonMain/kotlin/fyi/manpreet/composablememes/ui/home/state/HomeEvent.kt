@@ -21,6 +21,7 @@ sealed interface HomeEvent {
         data class OnSortSelect(val sortType: HomeState.SortTypes) : TopBarEvent
         data object OnCancel : TopBarEvent
         data object OnShare : TopBarEvent
+        data class OnDeleteConfirm(val value: Boolean) : TopBarEvent
         data object OnDelete : TopBarEvent
     }
 

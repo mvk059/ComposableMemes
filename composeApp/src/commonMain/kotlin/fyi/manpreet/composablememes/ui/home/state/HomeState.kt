@@ -11,6 +11,7 @@ data class HomeState(
     val selectedSortType: SortTypes = SortTypes.Favorites,
     val isSelectionMode: Boolean = false,
     val selectedItemsSize: Int = 0,
+    val isDeleteDialogVisible: Boolean = false,
 ) {
 
     sealed interface SortTypes {

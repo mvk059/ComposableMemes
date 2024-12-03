@@ -32,6 +32,8 @@ fun App(
             onCancelClick = viewModel::onEvent,
             onShareClick = viewModel::onEvent,
             onDeleteClick = viewModel::onEvent,
+            onDialogCancel = viewModel::onEvent,
+            onDialogDelete = viewModel::onEvent,
         )
     }
 }

@@ -73,6 +73,7 @@ class HomeViewModel(
             is HomeEvent.TopBarEvent.OnSortSelect -> onSortSelect(event.sortType)
             is HomeEvent.TopBarEvent.OnCancel -> onCancel()
             is HomeEvent.TopBarEvent.OnShare -> onShare()
+            is HomeEvent.TopBarEvent.OnDeleteConfirm -> onDeleteConfirm(event.value)
             is HomeEvent.TopBarEvent.OnDelete -> onDelete()
         }
     }
@@ -150,14 +151,26 @@ class HomeViewModel(
 
     private fun onCancel() {
         val memes = _homeState.value.memes.map { it.copy(isSelected = false) }
-        _homeState.update { it.copy(memes = memes, isSelectionMode = false, selectedItemsSize = 0) }
+        _homeState.update {
+            it.copy(
+                memes = memes,
+                isSelectionMode = false,
+                selectedItemsSize = 0,
+                isDeleteDialogVisible = false
+            )
+        }
     }
 
     private fun onShare() {
 
     }
 
+    private fun onDeleteConfirm(value: Boolean) {
+        _homeState.update { it.copy(isDeleteDialogVisible = value) }
+    }
+
     private fun onDelete() {
+        onDeleteConfirm(false)
         viewModelScope.launch(Dispatchers.IO) {
             val memes = _homeState.value.memes.filter { it.isSelected }
             repository.deleteMemes(memes)
@@ -165,7 +178,6 @@ class HomeViewModel(
             updateList(sortType = _homeState.value.selectedSortType)
         }
     }
-
 
     private fun updateList(sortType: HomeState.SortTypes) {
         viewModelScope.launch(Dispatchers.IO) {

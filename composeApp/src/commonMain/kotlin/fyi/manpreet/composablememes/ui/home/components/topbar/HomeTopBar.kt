@@ -120,7 +120,7 @@ private fun RowScope.SelectionMode(
     Icon(
         modifier = Modifier
             .padding(horizontal = MaterialTheme.spacing.medium)
-            .clickable { onDeleteClick(HomeEvent.TopBarEvent.OnDelete) },
+            .clickable { onDeleteClick(HomeEvent.TopBarEvent.OnDeleteConfirm(true)) },
         imageVector = Icons.Outlined.Delete,
         contentDescription = null,
         tint = MaterialTheme.fixedAccentColors.secondaryFixedDim,

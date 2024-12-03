@@ -64,7 +64,8 @@ fun Typography(): Typography {
             fontFamily = manrope,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            lineHeight = 20.sp
+            lineHeight = 20.sp,
+            letterSpacing = 0.1.sp
         )
     )
 }

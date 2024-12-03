@@ -13,6 +13,7 @@ data class Gradients(
     val pressed: Brush = GradientPressed,
     val favorite: Brush = GradientFavorite,
     val selection: Brush = GradientSelection,
+    val borderButton: Brush = GradientButtonBorder,
 ) {
 
     private companion object {
@@ -41,6 +42,10 @@ data class Gradients(
             ),
             start = Offset(0f, Offset.Infinite.y),
             end = Offset(Offset.Infinite.x, 0f),
+        )
+
+        val GradientButtonBorder = Brush.linearGradient(
+            colors = listOf(PrimaryContainer.copy(0.5f), PurpleMedium1.copy(0.5f))
         )
     }
 }

@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.composables.core.Dialog
 import com.composables.core.DialogPanel
+import com.composables.core.DialogProperties
+import com.composables.core.Scrim
 import com.composables.core.rememberDialogState
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.common_cancel
@@ -45,8 +47,14 @@ fun DeleteDialog(
     val dialogState = rememberDialogState(initiallyVisible = isVisible)
 
     Box {
-
-        Dialog(state = dialogState) {
+        Dialog(
+            state = dialogState,
+            properties = DialogProperties(
+                dismissOnClickOutside = false,
+                dismissOnBackPress = false,
+            )
+        ) {
+            Scrim()
             DialogPanel(
                 modifier = modifier
                     .displayCutoutPadding()

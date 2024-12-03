@@ -22,6 +22,8 @@
     <string name="home_dialog_delete_subtitle">You will not be able to restore them. If you're fine with that, press 'Delete'.</string>
 
     <string name="meme_appbar_title">New Meme</string>
+    <string name="meme_bottom_bar_add_text">Add text</string>
+    <string name="meme_bottom_bar_save_meme">Save meme</string>
 
     <string name="meme_dialog_leave_title">Leave editor?</string>
     <string name="meme_dialog_leave_subtitle">You will lose your precious meme. If you're fine with that, press 'Leave'.</string>
@@ -29,4 +31,6 @@
     <string name="meme_fab_cd">Add</string>
     <string name="meme_search_cd">Search</string>
     <string name="meme_sort_cd">Toggle the sort menu</string>
+    <string name="meme_bottom_bar_undo_cd">Undo</string>
+    <string name="meme_bottom_bar_redo_cd">Redo</string>
 </resources>

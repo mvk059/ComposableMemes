@@ -11,6 +11,8 @@ class MemeLocalDataSourceImpl(
         db.memeDao().insertMeme(meme = meme)
     }
 
+    override suspend fun getMemeById(id: Long): MemeTable? = db.memeDao().getMemeById(id = id)
+
     override suspend fun getMemesSortedByFavorites(): List<MemeTable> =
         db.memeDao().getMemesSortedByFavorites()
 

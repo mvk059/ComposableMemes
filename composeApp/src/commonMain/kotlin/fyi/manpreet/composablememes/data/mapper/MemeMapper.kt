@@ -23,16 +23,20 @@ fun Meme.toMemeTable(): MemeTable {
 fun List<Meme>.toMemeTable() =
     map { meme -> meme.toMemeTable() }
 
+fun MemeTable.toMeme(): Meme {
+    return Meme(
+        id = id,
+        imageName = imageUrl,
+        createdDate = Instant.fromEpochMilliseconds(createdDateInMillis)
+            .toLocalDateTime(TimeZone.currentSystemDefault()),
+        isFavorite = isFavorite,
+        isSelected = false,
+    )
+}
+
 fun List<MemeTable>.toMeme(): List<Meme> {
     return this.map { memeTable ->
-        Meme(
-            id = memeTable.id,
-            imageName = memeTable.imageUrl,
-            createdDate = Instant.fromEpochMilliseconds(memeTable.createdDateInMillis)
-                .toLocalDateTime(TimeZone.currentSystemDefault()),
-            isFavorite = memeTable.isFavorite,
-            isSelected = false,
-        )
+        memeTable.toMeme()
     }
 }
 

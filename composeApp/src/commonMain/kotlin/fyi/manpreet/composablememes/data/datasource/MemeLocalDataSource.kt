@@ -6,6 +6,8 @@ interface MemeLocalDataSource {
 
     suspend fun insertMeme(meme: MemeTable)
 
+    suspend fun getMemeById(id: Long): MemeTable?
+
     suspend fun getMemesSortedByFavorites(): List<MemeTable>
 
     suspend fun getMemesSortedByDate(): List<MemeTable>

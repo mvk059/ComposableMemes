@@ -13,6 +13,9 @@ class MemeRepositoryImpl(
         localDataSource.insertMeme(meme.toMemeTable())
     }
 
+    override suspend fun getMemeById(id: Long): Meme? =
+        localDataSource.getMemeById(id)?.toMeme()
+
     override suspend fun getMemesSortedByFavorites(): List<Meme> =
         localDataSource.getMemesSortedByFavorites().toMeme()
 

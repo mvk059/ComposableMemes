@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.composables.core.DragIndication
 import com.composables.core.ModalBottomSheet
 import com.composables.core.ModalBottomSheetState
+import com.composables.core.Scrim
 import com.composables.core.Sheet
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.home.components.item.MemeItem
@@ -40,7 +41,7 @@ fun MemeListBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: ModalBottomSheetState,
     memeList: List<Meme>,
-    onMemeSelected: (HomeEvent.BottomSheetEvent) -> Unit,
+    onMemeSelected: (HomeEvent.BottomSheetEvent.OnMemeSelect) -> Unit,
     searchMode: Boolean,
     toggleSearchMode: (HomeEvent.BottomSheetEvent) -> Unit,
     searchText: String,
@@ -54,6 +55,7 @@ fun MemeListBottomSheet(
         state = sheetState,
         onDismiss = onDismiss,
     ) {
+        Scrim()
         Sheet(
             modifier = modifier
                 .fillMaxWidth()
@@ -109,7 +111,7 @@ fun MemeListBottomSheet(
 private fun ColumnScope.ListContent(
     modifier: Modifier = Modifier,
     memeList: List<Meme>,
-    onMemeSelected: (HomeEvent.BottomSheetEvent) -> Unit,
+    onMemeSelected: (HomeEvent.BottomSheetEvent.OnMemeSelect) -> Unit,
 ) {
 
     LazyVerticalGrid(

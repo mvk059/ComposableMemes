@@ -8,8 +8,8 @@ data class Meme(
     val id: Long = INVALID_ID,
     val imageName: String,
     val createdDate: LocalDateTime,
-    val isFavorite: Boolean,
-    val isSelected: Boolean,
+    val isFavorite: Boolean = false,
+    val isSelected: Boolean = false,
 ) {
 
     fun checkImageNameCombinations(searchValue: String): Boolean {

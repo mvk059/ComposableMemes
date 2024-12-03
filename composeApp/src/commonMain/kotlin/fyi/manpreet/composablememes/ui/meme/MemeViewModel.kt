@@ -2,6 +2,7 @@ package fyi.manpreet.composablememes.ui.meme
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeState
@@ -11,6 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class MemeViewModel(
     private val repository: MemeRepository,
@@ -19,8 +23,16 @@ class MemeViewModel(
     private val _memeState = MutableStateFlow(MemeState())
     val memeState = _memeState.asStateFlow()
 
-    fun loadMeme(id: Long) {
-        fetchMeme(id)
+    fun loadMeme(memeName: String) {
+        _memeState.update {
+            it.copy(
+                meme = Meme(
+                    imageName = memeName,
+                    createdDate = Clock.System.now()
+                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                )
+            )
+        }
     }
 
     fun onEvent(event: MemeEvent) {

@@ -42,7 +42,7 @@ fun App(
                     onSearchTextChangeBottomSheet = viewModel::onEvent,
                     onMemeSelectBottomSheet = {
                         viewModel.onEvent(it)
-                        navController.navigate(MemeDestination(it.meme.id))
+                        navController.navigate(MemeDestination(it.meme.imageName))
                     },
                     onFavoriteClick = viewModel::onEvent,
                     onSelectClick = viewModel::onEvent,
@@ -59,7 +59,7 @@ fun App(
             composable<MemeDestination> {
                 val args = it.toRoute<MemeDestination>()
                 MemeScreen(
-                    memeId = args.memeId,
+                    memeName = args.memeName,
                     navigateBack = { navController.navigateUp() }
                 )
             }

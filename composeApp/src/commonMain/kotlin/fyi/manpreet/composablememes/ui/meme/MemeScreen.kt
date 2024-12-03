@@ -10,17 +10,18 @@ import org.koin.compose.viewmodel.koinViewModel
 fun MemeScreen(
     modifier: Modifier = Modifier,
     viewModel: MemeViewModel = koinViewModel(),
-    memeId: Long,
+    memeName: String,
     navigateBack: () -> Unit,
 ) {
     val memeState = viewModel.memeState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.loadMeme(memeId)
+        viewModel.loadMeme(memeName)
     }
 
     MemeScreenContent(
         modifier = modifier,
+        meme = memeState.value.meme,
         isBackDialogVisible = memeState.value.isBackDialogVisible,
         onBackConfirmClickTopBar = viewModel::onEvent,
         onCancelClickDialog = viewModel::onEvent,

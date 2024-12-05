@@ -24,15 +24,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.allDrawableResources
 import fyi.manpreet.composablememes.data.model.Meme
@@ -94,14 +101,25 @@ fun MemeImage(
                                 val summed = original + dragAmount
 
                                 val newValue = Offset(
-                                    x = summed.x.coerceIn(0f, size.width.toFloat() - contentSize.width.toFloat()),
-                                    y = summed.y.coerceIn(0f, size.height.toFloat() - contentSize.height.toFloat())
+                                    x = summed.x.coerceIn(
+                                        0f,
+                                        size.width.toFloat() - contentSize.width.toFloat()// - 12.dp.toPx()
+                                    ),
+                                    y = summed.y.coerceIn(
+                                        0f,
+                                        size.height.toFloat() - contentSize.height.toFloat()// - 12.dp.toPx()
+                                    )
                                 )
 
                                 localOffset = newValue
                             },
                             onDragEnd = {
-                                onPositionUpdate(MemeEvent.EditorEvent.PositionUpdate(textBox.id, localOffset))
+                                onPositionUpdate(
+                                    MemeEvent.EditorEvent.PositionUpdate(
+                                        textBox.id,
+                                        localOffset
+                                    )
+                                )
                             }
                         )
                     }
@@ -125,6 +143,8 @@ private fun Content(
     onSizeChange: (IntSize) -> Unit,
 ) {
 
+    val textMeasurer = rememberTextMeasurer()
+
     Box(
         modifier = modifier
             .wrapContentSize()
@@ -133,15 +153,43 @@ private fun Content(
                 else Modifier
             )
             .onGloballyPositioned { onSizeChange(it.size) }
-            .background(Color.Green)
     ) {
 
-        Text(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        val textResult = textMeasurer.measure(
             text = textBox.text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
-            textAlign = TextAlign.Center
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = Color.Transparent,
+                fontSize = 24.sp
+            )
+        )
+        Text(
+            text = AnnotatedString(textBox.text),
+            modifier = Modifier
+                .background(color = Color.Transparent)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .drawBehind {
+                    drawIntoCanvas {
+
+                        // Draw the stroke
+                        drawText(
+                            textLayoutResult = textResult,
+                            color = Color.Black,
+                            drawStyle = Stroke(
+                                width = 5f
+                            )
+                        )
+                        // Draw the fill
+                        drawText(
+                            textLayoutResult = textResult,
+                            color = Color.Cyan,
+                            drawStyle = Fill,
+                        )
+                    }
+                },
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = Color.Transparent,
+                fontSize = 24.sp,
+            )
         )
 
         if (textBox.isSelected) {

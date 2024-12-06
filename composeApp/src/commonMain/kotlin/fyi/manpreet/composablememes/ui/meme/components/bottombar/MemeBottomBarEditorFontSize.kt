@@ -39,7 +39,7 @@ fun MemeBottomBarEditorFontSize(
     ) {
 
         Text(
-            modifier = Modifier.padding(horizontal = MaterialTheme.spacing.small),
+            modifier = Modifier.padding(start = MaterialTheme.spacing.medium, end = MaterialTheme.spacing.small),
             text = "aA",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onTertiary,
@@ -97,7 +97,7 @@ fun MemeBottomBarEditorFontSize(
         )
 
         Text(
-            modifier = Modifier.padding(horizontal = MaterialTheme.spacing.small),
+            modifier = Modifier.padding(start = MaterialTheme.spacing.small, end = MaterialTheme.spacing.medium),
             text = "aA",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onTertiary,

@@ -40,6 +40,7 @@ fun MemeScreenContent(
     onFontClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onFontItemSelectBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontSizeClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
+    onFontSizeChangeBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontColorClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onDoneClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onCloseClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
@@ -53,8 +54,6 @@ fun MemeScreenContent(
                 onBackClick = onBackConfirmClickTopBar,
             )
         },
-        bottomBar = {
-        }
     ) { innerPadding ->
 
         Box(
@@ -83,6 +82,7 @@ fun MemeScreenContent(
                     onFontClick = onFontClickBottomBar,
                     onFontItemSelect = onFontItemSelectBottomBar,
                     onFontSizeClick = onFontSizeClickBottomBar,
+                    onFontSizeChange = onFontSizeChangeBottomBar,
                     onFontColorClick = onFontColorClickBottomBar,
                     onDoneClick = onDoneClickBottomBar,
                     onCloseClick = onCloseClickBottomBar,

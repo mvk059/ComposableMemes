@@ -35,24 +35,29 @@ fun MemeBottomBarEditOptions(
     onFontColorClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onDoneClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onCloseClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
+    onFontSizeChange: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit
 ) {
 
     Column(
         modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
 
-        editorOptions.options.forEach { option ->
-            when(option.type) {
-                MemeEvent.EditorOptionsBottomBarEvent.Close -> {}
-                MemeEvent.EditorOptionsBottomBarEvent.Done -> {}
-                MemeEvent.EditorOptionsBottomBarEvent.Font -> MemeBottomBarEditorFont(
+        when (editorOptions.selectedOption) {
+            MemeEvent.EditorOptionsBottomBarEvent.Close -> {}
+            MemeEvent.EditorOptionsBottomBarEvent.Done -> {}
+            MemeEvent.EditorOptionsBottomBarEvent.Font ->
+                MemeBottomBarEditorFont(
                     modifier = Modifier,
                     fonts = editorSelectionOptions.fonts,
                     onFontClick = onFontItemSelect,
                 )
-                MemeEvent.EditorOptionsBottomBarEvent.FontColor -> {}
-                MemeEvent.EditorOptionsBottomBarEvent.FontSize -> {}
-            }
+
+            MemeEvent.EditorOptionsBottomBarEvent.FontColor -> {}
+            MemeEvent.EditorOptionsBottomBarEvent.FontSize ->
+                MemeBottomBarEditorFontSize(
+                    fontSize = editorSelectionOptions.fontSize,
+                    onFontSizeChange = onFontSizeChange,
+                )
         }
 
         Row(
@@ -79,7 +84,7 @@ fun MemeBottomBarEditOptions(
 
                 editorOptions.options.forEach { option ->
                     val background =
-                        if (option.isSelected) MaterialTheme.colorScheme.surfaceContainerHigh
+                        if (option.type == editorOptions.selectedOption) MaterialTheme.colorScheme.surfaceContainerHigh
                         else Color.Transparent
 
                     IconButton(

@@ -38,6 +38,7 @@ fun MemeScreen(
         onFontClickBottomBar = viewModel::onEvent,
         onFontItemSelectBottomBar = viewModel::onEvent,
         onFontSizeClickBottomBar = viewModel::onEvent,
+        onFontSizeChangeBottomBar = viewModel::onEvent,
         onFontColorClickBottomBar = viewModel::onEvent,
         onDoneClickBottomBar = viewModel::onEvent,
         onCloseClickBottomBar = viewModel::onEvent,

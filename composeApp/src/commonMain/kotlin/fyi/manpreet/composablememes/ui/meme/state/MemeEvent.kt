@@ -27,7 +27,7 @@ sealed interface MemeEvent {
 
     sealed interface EditorSelectionOptionsBottomBarEvent : MemeEvent {
         data class Font(val id: Long) : EditorSelectionOptionsBottomBarEvent
-        data class FontSize(val id: Long) : EditorSelectionOptionsBottomBarEvent
+        data class FontSize(val value: Float) : EditorSelectionOptionsBottomBarEvent
         data class FontColor(val id: Long) : EditorSelectionOptionsBottomBarEvent
     }
 }

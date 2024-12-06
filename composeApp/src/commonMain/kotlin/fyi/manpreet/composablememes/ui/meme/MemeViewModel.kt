@@ -45,19 +45,17 @@ class MemeViewModel(
                         MemeEditorOptions.Options(
                             type = MemeEvent.EditorOptionsBottomBarEvent.Font,
                             icon = Res.drawable.ic_font,
-                            isSelected = false,
                         ),
                         MemeEditorOptions.Options(
                             type = MemeEvent.EditorOptionsBottomBarEvent.FontSize,
                             icon = Res.drawable.ic_font_size,
-                            isSelected = false,
                         ),
                         MemeEditorOptions.Options(
                             type = MemeEvent.EditorOptionsBottomBarEvent.FontColor,
                             icon = Res.drawable.ic_font_color,
-                            isSelected = false,
                         )
                     ),
+                    selectedOption = MemeEvent.EditorOptionsBottomBarEvent.Font
                 ),
                 editorSelectionOptions = MemeEditorSelectionOptions(
                     fonts = listOf(
@@ -91,7 +89,8 @@ class MemeViewModel(
                             name = "Roboto Slab",
                             type = "serif",
                         ),
-                    )
+                    ),
+                    fontSize = 0.5f
                 ),
                 shouldShowEditOptions = false
             )
@@ -110,13 +109,13 @@ class MemeViewModel(
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
 
             is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
-            is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> {}
-            is MemeEvent.EditorOptionsBottomBarEvent.FontColor -> {}
+            is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
+            is MemeEvent.EditorOptionsBottomBarEvent.FontColor -> onEditOptionsBottomBarFontColorSelection()
             MemeEvent.EditorOptionsBottomBarEvent.Close -> deselectTextBox()
             MemeEvent.EditorOptionsBottomBarEvent.Done -> {}
 
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.Font -> onFontItemSelection(event.id)
-            is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontSize -> {}
+            is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontSize -> onFontSizeChange(event.value)
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontColor -> {}
         }
     }
@@ -202,17 +201,26 @@ class MemeViewModel(
         onFontItemSelection(_memeState.value.editorSelectionOptions.fonts.first().id)
     }
 
+    private fun onEditOptionsBottomBarFontSizeSelection() {
+        updateEditOptionsBottomBarSelection(MemeEvent.EditorOptionsBottomBarEvent.FontSize)
+    }
+
+    private fun onEditOptionsBottomBarFontColorSelection() {
+        updateEditOptionsBottomBarSelection(MemeEvent.EditorOptionsBottomBarEvent.FontColor)
+    }
+
     private fun updateEditOptionsBottomBarSelection(type: MemeEvent.EditorOptionsBottomBarEvent) {
         _memeState.update {
             it.copy(
                 editorOptions = it.editorOptions.copy(
-                    options = it.editorOptions.options.map { option ->
-                        if (option.type == type) {
-                            option.copy(isSelected = true)
-                        } else {
-                            option.copy(isSelected = false)
-                        }
-                    }
+//                    options = it.editorOptions.options.map { option ->
+//                        if (option.type == type) {
+//                            option.copy(isSelected = true)
+//                        } else {
+//                            option.copy(isSelected = false)
+//                        }
+//                    },
+                    selectedOption = type
                 )
             )
         }
@@ -241,5 +249,23 @@ class MemeViewModel(
 //                }
 //            )
 //        }
+    }
+
+    private fun onFontSizeChange(value: Float) {
+//        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
+
+        _memeState.update {
+            it.copy(
+                editorSelectionOptions = it.editorSelectionOptions.copy(
+                    fontSize = value
+                ),
+//                textBoxes = it.textBoxes.map { box ->
+//                    if (box.id == selectedTextBox.id) {
+//                        box.copy(fontSize = value)
+//                    } else box
+//                }
+            )
+        }
+
     }
 }

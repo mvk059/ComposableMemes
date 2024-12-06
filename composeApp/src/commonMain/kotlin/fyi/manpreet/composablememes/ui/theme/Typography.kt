@@ -70,7 +70,7 @@ fun Typography(): Typography {
         labelSmall = TextStyle(
             fontFamily = manrope,
             fontWeight = FontWeight.Light,
-            fontSize = 10.sp,
+            fontSize = 12.sp,
             lineHeight = 14.sp,
             letterSpacing = 0.2.sp,
         )

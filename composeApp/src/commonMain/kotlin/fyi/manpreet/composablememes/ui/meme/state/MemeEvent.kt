@@ -16,4 +16,18 @@ sealed interface MemeEvent {
         data object DeselectTextBox : EditorEvent
         data class PositionUpdate(val id: Long, val offset: Offset) : EditorEvent
     }
+
+    sealed interface EditorOptionsBottomBarEvent : MemeEvent {
+        data object Font : EditorOptionsBottomBarEvent
+        data object FontSize : EditorOptionsBottomBarEvent
+        data object FontColor : EditorOptionsBottomBarEvent
+        data object Close : EditorOptionsBottomBarEvent
+        data object Done : EditorOptionsBottomBarEvent
+    }
+
+    sealed interface EditorSelectionOptionsBottomBarEvent : MemeEvent {
+        data class Font(val id: Long) : EditorSelectionOptionsBottomBarEvent
+        data class FontSize(val id: Long) : EditorSelectionOptionsBottomBarEvent
+        data class FontColor(val id: Long) : EditorSelectionOptionsBottomBarEvent
+    }
 }

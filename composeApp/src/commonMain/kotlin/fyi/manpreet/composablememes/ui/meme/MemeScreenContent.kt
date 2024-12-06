@@ -3,24 +3,32 @@ package fyi.manpreet.composablememes.ui.meme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.meme.components.bottombar.MemeBottomBar
+import fyi.manpreet.composablememes.ui.meme.components.bottombar.MemeBottomBarEditOptions
 import fyi.manpreet.composablememes.ui.meme.components.dialog.BackConfirmationDialog
 import fyi.manpreet.composablememes.ui.meme.components.meme.MemeImage
 import fyi.manpreet.composablememes.ui.meme.components.topbar.MemeTopBar
+import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
+import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
+import fyi.manpreet.composablememes.ui.theme.spacing
 
 @Composable
 fun MemeScreenContent(
     modifier: Modifier = Modifier,
     meme: Meme?,
     textBoxes: List<MemeTextBox>,
+    editorOptionsBottomBar: MemeEditorOptions,
+    editorSelectionOptionsBottomBar: MemeEditorSelectionOptions,
     isBackDialogVisible: Boolean,
+    shouldShowEditOptions: Boolean,
     onBackConfirmClickTopBar: (MemeEvent.TopBarEvent) -> Unit,
     onCancelClickDialog: (MemeEvent.TopBarEvent) -> Unit,
     onBackClickDialog: () -> Unit,
@@ -29,6 +37,12 @@ fun MemeScreenContent(
     onTextBoxClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onDeselectClickEditor: (MemeEvent.EditorEvent) -> Unit,
+    onFontClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
+    onFontItemSelectBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
+    onFontSizeClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
+    onFontColorClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
+    onDoneClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
+    onCloseClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
 ) {
 
     if (meme == null) return
@@ -40,9 +54,6 @@ fun MemeScreenContent(
             )
         },
         bottomBar = {
-            MemeBottomBar(
-                onAddText = onAddTextBottomBar,
-            )
         }
     ) { innerPadding ->
 
@@ -52,7 +63,10 @@ fun MemeScreenContent(
                 .padding(innerPadding)
         ) {
             MemeImage(
-                modifier = Modifier.fillMaxSize().align(Alignment.Center),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.Center)
+                    .padding(bottom = MaterialTheme.spacing.bottomBarGapSize),
                 meme = meme,
                 textBoxes = textBoxes,
                 onPositionUpdate = onPositionUpdateEditor,
@@ -60,8 +74,26 @@ fun MemeScreenContent(
                 onTextBoxCloseClick = onTextBoxCloseClickEditor,
                 onDeselectClick = onDeselectClickEditor,
             )
-        }
 
+            if (shouldShowEditOptions) {
+                MemeBottomBarEditOptions(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    editorOptions = editorOptionsBottomBar,
+                    editorSelectionOptions = editorSelectionOptionsBottomBar,
+                    onFontClick = onFontClickBottomBar,
+                    onFontItemSelect = onFontItemSelectBottomBar,
+                    onFontSizeClick = onFontSizeClickBottomBar,
+                    onFontColorClick = onFontColorClickBottomBar,
+                    onDoneClick = onDoneClickBottomBar,
+                    onCloseClick = onCloseClickBottomBar,
+                )
+            } else {
+                MemeBottomBar(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    onAddText = onAddTextBottomBar,
+                )
+            }
+        }
 
         if (isBackDialogVisible) {
             BackConfirmationDialog(

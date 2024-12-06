@@ -23,7 +23,10 @@ fun MemeScreen(
         modifier = modifier,
         meme = memeState.value.meme,
         textBoxes = memeState.value.textBoxes,
+        editorOptionsBottomBar = memeState.value.editorOptions,
+        editorSelectionOptionsBottomBar = memeState.value.editorSelectionOptions,
         isBackDialogVisible = memeState.value.isBackDialogVisible,
+        shouldShowEditOptions = memeState.value.shouldShowEditOptions,
         onBackConfirmClickTopBar = viewModel::onEvent,
         onCancelClickDialog = viewModel::onEvent,
         onBackClickDialog = navigateBack,
@@ -32,6 +35,12 @@ fun MemeScreen(
         onTextBoxClickEditor = viewModel::onEvent,
         onTextBoxCloseClickEditor = viewModel::onEvent,
         onDeselectClickEditor = viewModel::onEvent,
+        onFontClickBottomBar = viewModel::onEvent,
+        onFontItemSelectBottomBar = viewModel::onEvent,
+        onFontSizeClickBottomBar = viewModel::onEvent,
+        onFontColorClickBottomBar = viewModel::onEvent,
+        onDoneClickBottomBar = viewModel::onEvent,
+        onCloseClickBottomBar = viewModel::onEvent,
     )
 
 }

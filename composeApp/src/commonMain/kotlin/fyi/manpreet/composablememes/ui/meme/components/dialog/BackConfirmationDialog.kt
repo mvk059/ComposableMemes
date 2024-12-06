@@ -91,7 +91,7 @@ fun BackConfirmationDialog(
                             content = {
                                 Text(
                                     text = stringResource(Res.string.common_cancel),
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.fixedAccentColors.secondaryFixedDim,
                                 )
                             }
@@ -107,7 +107,7 @@ fun BackConfirmationDialog(
                             content = {
                                 Text(
                                     text = stringResource(Res.string.common_leave),
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.fixedAccentColors.secondaryFixedDim,
                                 )
                             }

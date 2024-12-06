@@ -60,12 +60,19 @@ fun Typography(): Typography {
             fontSize = 12.sp,
             lineHeight = 16.sp
         ),
-        labelSmall = TextStyle(
+        labelMedium = TextStyle(
             fontFamily = manrope,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
             lineHeight = 20.sp,
             letterSpacing = 0.1.sp
+        ),
+        labelSmall = TextStyle(
+            fontFamily = manrope,
+            fontWeight = FontWeight.Light,
+            fontSize = 10.sp,
+            lineHeight = 14.sp,
+            letterSpacing = 0.2.sp,
         )
     )
 }

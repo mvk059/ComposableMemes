@@ -103,7 +103,7 @@ fun DeleteDialog(
                             content = {
                                 Text(
                                     text = stringResource(Res.string.common_cancel),
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.fixedAccentColors.secondaryFixedDim,
                                 )
                             }
@@ -116,7 +116,7 @@ fun DeleteDialog(
                             content = {
                                 Text(
                                     text = stringResource(Res.string.common_delete),
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.fixedAccentColors.secondaryFixedDim,
                                 )
                             }

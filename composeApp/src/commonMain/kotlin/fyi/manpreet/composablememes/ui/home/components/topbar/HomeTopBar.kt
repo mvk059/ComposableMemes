@@ -150,7 +150,7 @@ private fun RowScope.SortDropdown(
                     }
                     Text(
                         text = text,
-                        style = MaterialTheme.typography.labelSmall.copy(
+                        style = MaterialTheme.typography.labelMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     )

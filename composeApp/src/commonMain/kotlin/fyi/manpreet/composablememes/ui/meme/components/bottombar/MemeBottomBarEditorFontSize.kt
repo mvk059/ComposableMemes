@@ -1,6 +1,8 @@
 package fyi.manpreet.composablememes.ui.meme.components.bottombar
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,6 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.unit.dp
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.theme.fixedAccentColors
@@ -32,6 +36,9 @@ fun MemeBottomBarEditorFontSize(
     onFontSizeChange: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit
 ) {
 
+    val interactionSource = remember { MutableInteractionSource() }
+    val isDragging by interactionSource.collectIsDraggedAsState()
+
     Row(
         modifier = modifier.background(color = MaterialTheme.colorScheme.surfaceContainerLow),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -39,7 +46,10 @@ fun MemeBottomBarEditorFontSize(
     ) {
 
         Text(
-            modifier = Modifier.padding(start = MaterialTheme.spacing.medium, end = MaterialTheme.spacing.small),
+            modifier = Modifier.padding(
+                start = MaterialTheme.spacing.medium,
+                end = MaterialTheme.spacing.small
+            ),
             text = "aA",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onTertiary,
@@ -53,13 +63,33 @@ fun MemeBottomBarEditorFontSize(
             onValueChange = {
                 onFontSizeChange(MemeEvent.EditorSelectionOptionsBottomBarEvent.FontSize(it))
             },
+            interactionSource = interactionSource,
             thumb = {
-                Box(
-                    modifier = Modifier
-                        .padding(0.dp)
-                        .background(MaterialTheme.fixedAccentColors.secondaryFixedDim, CircleShape)
-                        .size(MaterialTheme.spacing.medium)
-                )
+                Box {
+
+                    Box(
+                        modifier = Modifier
+                            .size(if (isDragging) MaterialTheme.spacing.largeXL else MaterialTheme.spacing.large)
+                            .align(Alignment.Center)
+                            .padding(bottom = 0.dp)
+                            .blur(30.dp, edgeTreatment = BlurredEdgeTreatment(CircleShape))
+                            .background(
+                                color = MaterialTheme.fixedAccentColors.secondaryFixedDim,
+                                shape = CircleShape
+                            )
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .align(Alignment.Center)
+                            .background(
+                                MaterialTheme.fixedAccentColors.secondaryFixedDim,
+                                CircleShape
+                            )
+                            .size(MaterialTheme.spacing.medium)
+                    )
+                }
             },
             track = { sliderState ->
                 // Calculate fraction of the slider that is active
@@ -97,7 +127,10 @@ fun MemeBottomBarEditorFontSize(
         )
 
         Text(
-            modifier = Modifier.padding(start = MaterialTheme.spacing.small, end = MaterialTheme.spacing.medium),
+            modifier = Modifier.padding(
+                start = MaterialTheme.spacing.small,
+                end = MaterialTheme.spacing.medium
+            ),
             text = "aA",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onTertiary,

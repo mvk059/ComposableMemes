@@ -1,6 +1,7 @@
 package fyi.manpreet.composablememes.ui.meme
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import composablememes.composeapp.generated.resources.Res
@@ -90,7 +91,33 @@ class MemeViewModel(
                             type = "serif",
                         ),
                     ),
-                    fontSize = 0.5f
+                    fontSize = 0.5f,
+                    fontColors = listOf(
+                        MemeEditorSelectionOptions.FontColor(
+                            id = 1,
+                            color = Color.White,
+                        ),
+                        MemeEditorSelectionOptions.FontColor(
+                            id = 2,
+                            color = Color.Yellow,
+                        ),
+                        MemeEditorSelectionOptions.FontColor(
+                            id = 3,
+                            color = Color.Red,
+                        ),
+                        MemeEditorSelectionOptions.FontColor(
+                            id = 4,
+                            color = Color.Magenta,
+                        ),
+                        MemeEditorSelectionOptions.FontColor(
+                            id = 5,
+                            color = Color.Cyan,
+                        ),
+                        MemeEditorSelectionOptions.FontColor(
+                            id = 6,
+                            color = Color.Green,
+                        ),
+                    )
                 ),
                 shouldShowEditOptions = false
             )
@@ -116,7 +143,7 @@ class MemeViewModel(
 
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.Font -> onFontItemSelection(event.id)
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontSize -> onFontSizeChange(event.value)
-            is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontColor -> {}
+            is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontColor -> onFontColorChange(event.id)
         }
     }
 
@@ -267,5 +294,20 @@ class MemeViewModel(
             )
         }
 
+    }
+
+    private fun onFontColorChange(id: Long) {
+//        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
+
+        _memeState.update {
+            it.copy(
+                editorSelectionOptions = it.editorSelectionOptions.copy(
+                    fontColors = it.editorSelectionOptions.fontColors.map { color ->
+                        if (color.id == id) color.copy(isSelected = true)
+                        else color.copy(isSelected = false)
+                    }
+                )
+            )
+        }
     }
 }

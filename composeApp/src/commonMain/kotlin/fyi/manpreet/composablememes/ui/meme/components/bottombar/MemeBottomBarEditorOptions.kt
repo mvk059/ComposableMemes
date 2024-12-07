@@ -29,10 +29,9 @@ fun MemeBottomBarEditOptions(
     modifier: Modifier = Modifier,
     editorOptions: MemeEditorOptions,
     editorSelectionOptions: MemeEditorSelectionOptions,
-    onFontClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
+    onEditorOptionsItemClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onFontItemSelect: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
-    onFontSizeClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
-    onFontColorClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
+    onFontColorItemSelect: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onDoneClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onCloseClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onFontSizeChange: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit
@@ -52,11 +51,17 @@ fun MemeBottomBarEditOptions(
                     onFontClick = onFontItemSelect,
                 )
 
-            MemeEvent.EditorOptionsBottomBarEvent.FontColor -> {}
             MemeEvent.EditorOptionsBottomBarEvent.FontSize ->
                 MemeBottomBarEditorFontSize(
                     fontSize = editorSelectionOptions.fontSize,
                     onFontSizeChange = onFontSizeChange,
+                )
+
+            MemeEvent.EditorOptionsBottomBarEvent.FontColor ->
+                MemeBottomBarEditorFontColor(
+                    modifier = Modifier,
+                    colors = editorSelectionOptions.fontColors,
+                    onFontColorSelect = onFontColorItemSelect,
                 )
         }
 
@@ -92,7 +97,7 @@ fun MemeBottomBarEditOptions(
                             color = background,
                             shape = RoundedCornerShape(MaterialTheme.spacing.smallMedium)
                         ),
-                        onClick = { onFontClick(option.type) }
+                        onClick = { onEditorOptionsItemClick(option.type) }
                     ) {
                         Icon(
                             painterResource(resource = option.icon),

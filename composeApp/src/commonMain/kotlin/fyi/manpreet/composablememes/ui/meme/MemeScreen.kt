@@ -35,11 +35,10 @@ fun MemeScreen(
         onTextBoxClickEditor = viewModel::onEvent,
         onTextBoxCloseClickEditor = viewModel::onEvent,
         onDeselectClickEditor = viewModel::onEvent,
-        onFontClickBottomBar = viewModel::onEvent,
+        onEditorOptionsItemClickBottomBar = viewModel::onEvent,
         onFontItemSelectBottomBar = viewModel::onEvent,
-        onFontSizeClickBottomBar = viewModel::onEvent,
         onFontSizeChangeBottomBar = viewModel::onEvent,
-        onFontColorClickBottomBar = viewModel::onEvent,
+        onFontColorSelectBottomBar = viewModel::onEvent,
         onDoneClickBottomBar = viewModel::onEvent,
         onCloseClickBottomBar = viewModel::onEvent,
     )

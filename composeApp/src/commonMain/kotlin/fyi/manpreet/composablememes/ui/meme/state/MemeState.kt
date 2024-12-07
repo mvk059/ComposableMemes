@@ -11,7 +11,8 @@ data class MemeState(
     ),
     val editorSelectionOptions: MemeEditorSelectionOptions = MemeEditorSelectionOptions(
         fonts = emptyList(),
-        fontSize = 0.5f
+        fontSize = 0.5f,
+        fontColors = emptyList()
     ),
     val isBackDialogVisible: Boolean = false,
     val shouldShowEditOptions: Boolean = false,

@@ -6,12 +6,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 
 @Composable
 fun MemeTheme(
-    fixedAccentColors: FixedAccentColors = getFixedAccentColors,
     content: @Composable () -> Unit,
 ) {
 
     CompositionLocalProvider(
-        LocalFixedAccentColors provides fixedAccentColors,
+        LocalFixedAccentColors provides getFixedAccentColors,
+        LocalTypographyFonts provides TypographyFonts(),
         LocalSpacing provides Spacing(),
         LocalGradient provides Gradients(),
     ) {

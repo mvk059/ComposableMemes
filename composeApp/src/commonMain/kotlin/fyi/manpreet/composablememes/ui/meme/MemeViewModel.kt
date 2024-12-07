@@ -2,6 +2,7 @@ package fyi.manpreet.composablememes.ui.meme
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import composablememes.composeapp.generated.resources.Res
@@ -10,11 +11,14 @@ import composablememes.composeapp.generated.resources.ic_font_color
 import composablememes.composeapp.generated.resources.ic_font_size
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.repository.MemeRepository
+import fyi.manpreet.composablememes.ui.meme.mapper.SliderValue
+import fyi.manpreet.composablememes.ui.meme.mapper.sliderValueToFontSize
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeState
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
+import fyi.manpreet.composablememes.util.MemeConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,7 +95,7 @@ class MemeViewModel(
                             type = "serif",
                         ),
                     ),
-                    fontSize = 0.5f,
+                    fontSize = MemeConstants.DEFAULT_SLIDER_VALUE,
                     fontColors = listOf(
                         MemeEditorSelectionOptions.FontColor(
                             id = 1,
@@ -234,6 +238,7 @@ class MemeViewModel(
 
     private fun onEditOptionsBottomBarFontColorSelection() {
         updateEditOptionsBottomBarSelection(MemeEvent.EditorOptionsBottomBarEvent.FontColor)
+        onFontColorChange(_memeState.value.editorSelectionOptions.fontColors.first().id)
     }
 
     private fun updateEditOptionsBottomBarSelection(type: MemeEvent.EditorOptionsBottomBarEvent) {
@@ -278,26 +283,28 @@ class MemeViewModel(
 //        }
     }
 
-    private fun onFontSizeChange(value: Float) {
-//        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
+    private fun onFontSizeChange(value: SliderValue) {
+        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
+        val mappedValue = value.sliderValueToFontSize()
+        val textStyle = selectedTextBox.textStyle.copy(fontSize = mappedValue)
 
         _memeState.update {
             it.copy(
                 editorSelectionOptions = it.editorSelectionOptions.copy(
                     fontSize = value
                 ),
-//                textBoxes = it.textBoxes.map { box ->
-//                    if (box.id == selectedTextBox.id) {
-//                        box.copy(fontSize = value)
-//                    } else box
-//                }
+                textBoxes = it.textBoxes.map { box ->
+                    if (box.id == selectedTextBox.id) box.copy(textStyle = textStyle)
+                    else box
+                }
             )
         }
 
     }
 
     private fun onFontColorChange(id: Long) {
-//        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
+        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
+        val selectedColor = _memeState.value.editorSelectionOptions.fontColors.find { it.id == id }?.color ?: return
 
         _memeState.update {
             it.copy(
@@ -305,8 +312,12 @@ class MemeViewModel(
                     fontColors = it.editorSelectionOptions.fontColors.map { color ->
                         if (color.id == id) color.copy(isSelected = true)
                         else color.copy(isSelected = false)
-                    }
-                )
+                    },
+                ),
+                textBoxes = it.textBoxes.map { box ->
+                    if (box.id == selectedTextBox.id) box.copy(textStyle = box.textStyle.copy(color = selectedColor))
+                    else box
+                }
             )
         }
     }

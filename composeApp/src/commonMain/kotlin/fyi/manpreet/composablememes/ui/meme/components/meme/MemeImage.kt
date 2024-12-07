@@ -75,7 +75,7 @@ fun MemeImage(
     Box(
         Modifier
             .size(size.width.dp, size.height.dp)
-            .clickable { onDeselectClick(MemeEvent.EditorEvent.DeselectTextBox) }
+//            .clickable { onDeselectClick(MemeEvent.EditorEvent.DeselectTextBox) }
     ) {
 
         textBoxes.forEach { textBox ->
@@ -166,30 +166,31 @@ private fun Content(
             text = AnnotatedString(textBox.text),
             modifier = Modifier
                 .background(color = Color.Transparent)
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .drawBehind {
-                    drawIntoCanvas {
-
-                        // Draw the stroke
-                        drawText(
-                            textLayoutResult = textResult,
-                            color = Color.Black,
-                            drawStyle = Stroke(
-                                width = 5f
-                            )
-                        )
-                        // Draw the fill
-                        drawText(
-                            textLayoutResult = textResult,
-                            color = Color.Cyan,
-                            drawStyle = Fill,
-                        )
-                    }
-                },
-            style = MaterialTheme.typography.bodyLarge.copy(
-                color = Color.Transparent,
-                fontSize = 24.sp,
-            )
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+//                .drawBehind {
+//                    drawIntoCanvas {
+//
+//                        // Draw the stroke
+//                        drawText(
+//                            textLayoutResult = textResult,
+//                            color = Color.Black,
+//                            drawStyle = Stroke(
+//                                width = 5f
+//                            )
+//                        )
+//                        // Draw the fill
+//                        drawText(
+//                            textLayoutResult = textResult,
+//                            color = Color.Cyan,
+//                            drawStyle = Fill,
+//                        )
+//                    }
+//                },
+//            style = MaterialTheme.typography.bodyLarge.copy(
+//                color = Color.Transparent,
+//                fontSize = 24.sp,
+//            )
+            style = textBox.textStyle
         )
 
         if (textBox.isSelected) {

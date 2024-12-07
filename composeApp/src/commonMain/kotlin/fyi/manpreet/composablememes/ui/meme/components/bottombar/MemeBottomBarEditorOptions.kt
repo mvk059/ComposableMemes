@@ -45,7 +45,7 @@ fun MemeBottomBarEditOptions(
             MemeEvent.EditorOptionsBottomBarEvent.Font ->
                 MemeBottomBarEditorFont(
                     modifier = Modifier,
-                    fonts = editorSelectionOptions.fonts,
+                    font = editorSelectionOptions.font,
                     onFontClick = onFontItemSelect,
                 )
 

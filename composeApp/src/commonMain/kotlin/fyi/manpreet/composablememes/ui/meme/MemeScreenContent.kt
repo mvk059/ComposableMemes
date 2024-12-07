@@ -41,8 +41,6 @@ fun MemeScreenContent(
     onFontItemSelectBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontSizeChangeBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontColorSelectBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
-    onDoneClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
-    onCloseClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
 ) {
 
     if (meme == null) return
@@ -82,8 +80,6 @@ fun MemeScreenContent(
                     onFontItemSelect = onFontItemSelectBottomBar,
                     onFontSizeChange = onFontSizeChangeBottomBar,
                     onFontColorItemSelect = onFontColorSelectBottomBar,
-                    onDoneClick = onDoneClickBottomBar,
-                    onCloseClick = onCloseClickBottomBar,
                 )
             } else {
                 MemeBottomBar(

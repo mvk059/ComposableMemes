@@ -32,9 +32,7 @@ fun MemeBottomBarEditOptions(
     onEditorOptionsItemClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onFontItemSelect: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontColorItemSelect: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
-    onDoneClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
-    onCloseClick: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
-    onFontSizeChange: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit
+    onFontSizeChange: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
 ) {
 
     Column(
@@ -74,7 +72,7 @@ fun MemeBottomBarEditOptions(
         ) {
 
             IconButton(
-                onClick = { onCloseClick(MemeEvent.EditorOptionsBottomBarEvent.Close) }
+                onClick = { onEditorOptionsItemClick(MemeEvent.EditorOptionsBottomBarEvent.Close) }
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
@@ -109,7 +107,7 @@ fun MemeBottomBarEditOptions(
             }
 
             IconButton(
-                onClick = { onDoneClick(MemeEvent.EditorOptionsBottomBarEvent.Done) }
+                onClick = { onEditorOptionsItemClick(MemeEvent.EditorOptionsBottomBarEvent.Done) }
             ) {
                 Icon(
                     Icons.Default.Done,

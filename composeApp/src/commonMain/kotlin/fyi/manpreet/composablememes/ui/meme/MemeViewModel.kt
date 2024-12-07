@@ -142,8 +142,8 @@ class MemeViewModel(
             is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontColor -> onEditOptionsBottomBarFontColorSelection()
-            MemeEvent.EditorOptionsBottomBarEvent.Close -> deselectTextBox()
-            MemeEvent.EditorOptionsBottomBarEvent.Done -> {}
+            MemeEvent.EditorOptionsBottomBarEvent.Close -> removeTextBox()
+            MemeEvent.EditorOptionsBottomBarEvent.Done -> applyTextBoxStyle()
 
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.Font -> onFontItemSelection(event.id)
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontSize -> onFontSizeChange(event.value)
@@ -168,26 +168,40 @@ class MemeViewModel(
 
     private fun addTextBox() {
         unselectAllTextBox()
+        val id = Clock.System.now().epochSeconds
         val text = "TAP TWICE TO EDIT ${Random.nextInt(0, 10)}"
+        val fontSize = MemeConstants.DEFAULT_SLIDER_VALUE
         val newTextBox = MemeTextBox(
-            id = Clock.System.now().epochSeconds,
+            id = id,
             text = text,
             offset = Offset.Zero,
             isSelected = true,
+            textStyle = TextStyle(
+                color = Color.White,
+                fontSize = fontSize.sliderValueToFontSize()
+            ),
         )
         _memeState.update {
             it.copy(
                 textBoxes = it.textBoxes + newTextBox,
+                editorSelectionOptions = it.editorSelectionOptions.copy(fontSize = fontSize),
                 shouldShowEditOptions = true,
             )
         }
         onEditOptionsBottomBarFontSelection()
     }
 
-    private fun removeTextBox(id: Long) {
+    private fun removeTextBox(id: Long? = null) {
+        val box = if (id != null) _memeState.value.textBoxes.find { it.id == id }
+        else _memeState.value.textBoxes.find { it.isSelected }
+
+        if (box == null) return
+        val allBox = _memeState.value.textBoxes.toMutableList()
+        allBox.remove(box)
+
         _memeState.update { currentState ->
             currentState.copy(
-                textBoxes = currentState.textBoxes.filter { it.id != id },
+                textBoxes = allBox,
                 shouldShowEditOptions = false
             )
         }
@@ -206,6 +220,10 @@ class MemeViewModel(
     }
 
     private fun deselectTextBox() {
+        unselectAllTextBox()
+    }
+
+    private fun applyTextBoxStyle() {
         unselectAllTextBox()
     }
 

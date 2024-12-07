@@ -9,4 +9,5 @@ data class MemeTextBox(
     val offset: Offset,
     val isSelected: Boolean,
     val textStyle: TextStyle = TextStyle(),
+    val fontFamilyType: FontFamilyType,
 )

@@ -24,25 +24,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.allDrawableResources
 import fyi.manpreet.composablememes.data.model.Meme
+import fyi.manpreet.composablememes.ui.meme.mapper.toFontFamily
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
 import org.jetbrains.compose.resources.DrawableResource
@@ -143,8 +140,6 @@ private fun Content(
     onSizeChange: (IntSize) -> Unit,
 ) {
 
-    val textMeasurer = rememberTextMeasurer()
-
     Box(
         modifier = modifier
             .wrapContentSize()
@@ -155,11 +150,20 @@ private fun Content(
             .onGloballyPositioned { onSizeChange(it.size) }
     ) {
 
-        val textResult = textMeasurer.measure(
-            text = textBox.text,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                color = Color.Transparent,
-                fontSize = 24.sp
+        Text(
+            text = AnnotatedString(textBox.text),
+            modifier = Modifier
+                .background(color = Color.Transparent)
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            style = TextStyle.Default.copy(
+                fontFamily = textBox.fontFamilyType.toFontFamily(),
+                fontSize = textBox.textStyle.fontSize,
+                color = Color.Black,
+                drawStyle = Stroke(
+                    miter = 5f,
+                    width = 5f,
+                    join = StrokeJoin.Round,
+                ),
             )
         )
         Text(
@@ -167,30 +171,9 @@ private fun Content(
             modifier = Modifier
                 .background(color = Color.Transparent)
                 .padding(horizontal = 8.dp, vertical = 4.dp),
-//                .drawBehind {
-//                    drawIntoCanvas {
-//
-//                        // Draw the stroke
-//                        drawText(
-//                            textLayoutResult = textResult,
-//                            color = Color.Black,
-//                            drawStyle = Stroke(
-//                                width = 5f
-//                            )
-//                        )
-//                        // Draw the fill
-//                        drawText(
-//                            textLayoutResult = textResult,
-//                            color = Color.Cyan,
-//                            drawStyle = Fill,
-//                        )
-//                    }
-//                },
-//            style = MaterialTheme.typography.bodyLarge.copy(
-//                color = Color.Transparent,
-//                fontSize = 24.sp,
-//            )
-            style = textBox.textStyle
+            style = textBox.textStyle.copy(
+                fontFamily = textBox.fontFamilyType.toFontFamily(),
+            )
         )
 
         if (textBox.isSelected) {

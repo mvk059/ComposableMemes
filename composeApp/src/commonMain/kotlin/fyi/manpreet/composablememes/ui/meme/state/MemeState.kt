@@ -10,7 +10,10 @@ data class MemeState(
         selectedOption = MemeEvent.EditorOptionsBottomBarEvent.Font
     ),
     val editorSelectionOptions: MemeEditorSelectionOptions = MemeEditorSelectionOptions(
-        fonts = emptyList(),
+        font = MemeEditorSelectionOptions.Fonts(
+            fonts = emptyList(),
+            example = ""
+        ),
         fontSize = 0.5f,
         fontColors = emptyList()
     ),

@@ -13,6 +13,7 @@ import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.ui.meme.mapper.SliderValue
 import fyi.manpreet.composablememes.ui.meme.mapper.sliderValueToFontSize
+import fyi.manpreet.composablememes.ui.meme.state.FontFamilyType
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
@@ -63,36 +64,45 @@ class MemeViewModel(
                     selectedOption = MemeEvent.EditorOptionsBottomBarEvent.Font
                 ),
                 editorSelectionOptions = MemeEditorSelectionOptions(
-                    fonts = listOf(
-                        MemeEditorSelectionOptions.Font(
-                            id = 1,
-                            name = "Roboto",
-                            type = "sans-serif",
-                        ),
-                        MemeEditorSelectionOptions.Font(
-                            id = 2,
-                            name = "Roboto Mono",
-                            type = "monospace",
-                        ),
-                        MemeEditorSelectionOptions.Font(
-                            id = 3,
-                            name = "Roboto Slab",
-                            type = "serif",
-                        ),
-                        MemeEditorSelectionOptions.Font(
-                            id = 4,
-                            name = "Roboto",
-                            type = "sans-serif",
-                        ),
-                        MemeEditorSelectionOptions.Font(
-                            id = 5,
-                            name = "Roboto Mono",
-                            type = "monospace",
-                        ),
-                        MemeEditorSelectionOptions.Font(
-                            id = 6,
-                            name = "Roboto Slab",
-                            type = "serif",
+                    font = MemeEditorSelectionOptions.Fonts(
+                        example = "Good",
+                        fonts = listOf(
+                            MemeEditorSelectionOptions.Fonts.Font(
+                                id = FontFamilyType.AntonSC,
+                                name = "Anton SC",
+                            ),
+                            MemeEditorSelectionOptions.Fonts.Font(
+                                id = FontFamilyType.DancingScript,
+                                name = "Dancing Script",
+                            ),
+                            MemeEditorSelectionOptions.Fonts.Font(
+                                id = FontFamilyType.Jaro,
+                                name = "Jaro",
+                            ),
+                            MemeEditorSelectionOptions.Fonts.Font(
+                                id = FontFamilyType.Lobster,
+                                name = "Lobster",
+                            ),
+                            MemeEditorSelectionOptions.Fonts.Font(
+                                id = FontFamilyType.Manrope,
+                                name = "Manrope",
+                            ),
+//                            MemeEditorSelectionOptions.Fonts.Font(
+//                                id = FontFamilyType.NotoSansSymbols,
+//                                name = "Noto Sans Symbols",
+//                            ),
+                            MemeEditorSelectionOptions.Fonts.Font(
+                                id = FontFamilyType.OpenSans,
+                                name = "Open Sans",
+                            ),
+                            MemeEditorSelectionOptions.Fonts.Font(
+                                id = FontFamilyType.Roboto,
+                                name = "Roboto",
+                            ),
+                            MemeEditorSelectionOptions.Fonts.Font(
+                                id = FontFamilyType.RubrikDoodleShadow,
+                                name = "Rubrik Doodle Shadow",
+                            ),
                         ),
                     ),
                     fontSize = MemeConstants.DEFAULT_SLIDER_VALUE,
@@ -120,6 +130,10 @@ class MemeViewModel(
                         MemeEditorSelectionOptions.FontColor(
                             id = 6,
                             color = Color.Green,
+                        ),
+                        MemeEditorSelectionOptions.FontColor(
+                            id = 7,
+                            color = Color.Black,
                         ),
                     )
                 ),
@@ -180,6 +194,7 @@ class MemeViewModel(
                 color = Color.White,
                 fontSize = fontSize.sliderValueToFontSize()
             ),
+            fontFamilyType = FontFamilyType.AntonSC,
         )
         _memeState.update {
             it.copy(
@@ -247,7 +262,7 @@ class MemeViewModel(
 
     private fun onEditOptionsBottomBarFontSelection() {
         updateEditOptionsBottomBarSelection(MemeEvent.EditorOptionsBottomBarEvent.Font)
-        onFontItemSelection(_memeState.value.editorSelectionOptions.fonts.first().id)
+        onFontItemSelection(_memeState.value.editorSelectionOptions.font.fonts.first().id)
     }
 
     private fun onEditOptionsBottomBarFontSizeSelection() {
@@ -260,51 +275,32 @@ class MemeViewModel(
     }
 
     private fun updateEditOptionsBottomBarSelection(type: MemeEvent.EditorOptionsBottomBarEvent) {
-        _memeState.update {
-            it.copy(
-                editorOptions = it.editorOptions.copy(
-//                    options = it.editorOptions.options.map { option ->
-//                        if (option.type == type) {
-//                            option.copy(isSelected = true)
-//                        } else {
-//                            option.copy(isSelected = false)
-//                        }
-//                    },
-                    selectedOption = type
-                )
-            )
-        }
+        _memeState.update { it.copy(editorOptions = it.editorOptions.copy(selectedOption = type)) }
     }
 
-    private fun onFontItemSelection(id: Long) {
-//        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
+    private fun onFontItemSelection(id: FontFamilyType) {
+        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
 
         _memeState.update {
             it.copy(
                 editorSelectionOptions = it.editorSelectionOptions.copy(
-                    fonts = it.editorSelectionOptions.fonts.map { font ->
-                        if (font.id == id) font.copy(isSelected = true)
-                        else font.copy(isSelected = false)
-                    }
-                )
+                    font = it.editorSelectionOptions.font.copy(
+                        fonts = it.editorSelectionOptions.font.fonts.map { font ->
+                            if (font.id == id) font.copy(isSelected = true)
+                            else font.copy(isSelected = false)
+                        }
+                    )
+                ),
+                textBoxes = it.textBoxes.map { box ->
+                    if (box.id == selectedTextBox.id) box.copy(fontFamilyType = id)
+                    else box
+                }
             )
         }
-
-//        _memeState.update {
-//            it.copy(
-//                textBoxes = it.textBoxes.map { box ->
-//                    if (box.id == selectedTextBox.id) {
-//                        box.copy(font = it.editorSelectionOptions.fonts.find { it.id == id }!!)
-//                    } else box
-//                }
-//            )
-//        }
     }
 
     private fun onFontSizeChange(value: SliderValue) {
         val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
-        val mappedValue = value.sliderValueToFontSize()
-        val textStyle = selectedTextBox.textStyle.copy(fontSize = mappedValue)
 
         _memeState.update {
             it.copy(
@@ -312,7 +308,12 @@ class MemeViewModel(
                     fontSize = value
                 ),
                 textBoxes = it.textBoxes.map { box ->
-                    if (box.id == selectedTextBox.id) box.copy(textStyle = textStyle)
+                    if (box.id == selectedTextBox.id)
+                        box.copy(
+                            textStyle = selectedTextBox.textStyle.copy(
+                                fontSize = value.sliderValueToFontSize()
+                            )
+                        )
                     else box
                 }
             )
@@ -322,7 +323,8 @@ class MemeViewModel(
 
     private fun onFontColorChange(id: Long) {
         val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
-        val selectedColor = _memeState.value.editorSelectionOptions.fontColors.find { it.id == id }?.color ?: return
+        val selectedColor =
+            _memeState.value.editorSelectionOptions.fontColors.find { it.id == id }?.color ?: return
 
         _memeState.update {
             it.copy(

@@ -12,7 +12,9 @@ sealed interface MemeEvent {
     sealed interface EditorEvent : MemeEvent {
         data object AddTextBox : EditorEvent
         data class RemoveTextBox(val id: Long) : EditorEvent
+        data class UpdateTextBox(val text: String) : EditorEvent
         data class SelectTextBox(val id: Long) : EditorEvent
+        data class EditTextBox(val id: Long) : EditorEvent
         data object DeselectTextBox : EditorEvent
         data class PositionUpdate(val id: Long, val offset: Offset) : EditorEvent
     }

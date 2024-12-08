@@ -87,10 +87,6 @@ class MemeViewModel(
                                 id = FontFamilyType.Manrope,
                                 name = "Manrope",
                             ),
-//                            MemeEditorSelectionOptions.Fonts.Font(
-//                                id = FontFamilyType.NotoSansSymbols,
-//                                name = "Noto Sans Symbols",
-//                            ),
                             MemeEditorSelectionOptions.Fonts.Font(
                                 id = FontFamilyType.OpenSans,
                                 name = "Open Sans",
@@ -149,14 +145,16 @@ class MemeViewModel(
 
             MemeEvent.EditorEvent.AddTextBox -> addTextBox()
             is MemeEvent.EditorEvent.RemoveTextBox -> removeTextBox(event.id)
+            is MemeEvent.EditorEvent.UpdateTextBox -> updateTextBox(event.text)
             is MemeEvent.EditorEvent.DeselectTextBox -> deselectTextBox()
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
+            is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
 
             is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontColor -> onEditOptionsBottomBarFontColorSelection()
-            MemeEvent.EditorOptionsBottomBarEvent.Close -> removeTextBox()
+            MemeEvent.EditorOptionsBottomBarEvent.Close -> deselectTextBox()
             MemeEvent.EditorOptionsBottomBarEvent.Done -> applyTextBoxStyle()
 
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.Font -> onFontItemSelection(event.id)
@@ -190,6 +188,7 @@ class MemeViewModel(
             text = text,
             offset = Offset.Zero,
             isSelected = true,
+            isEditable = true,
             textStyle = TextStyle(
                 color = Color.White,
                 fontSize = fontSize.sliderValueToFontSize()
@@ -222,14 +221,40 @@ class MemeViewModel(
         }
     }
 
-    private fun selectTextBox(id: Long) {
+    private fun updateTextBox(text: String) {
+        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
+
         _memeState.update {
             it.copy(
                 textBoxes = it.textBoxes.map { box ->
-                    if (box.id == id) box.copy(isSelected = true)
-                    else box.copy(isSelected = false)
+                    if (box.id == selectedTextBox.id) box.copy(text = text)
+                    else box
+                }
+            )
+        }
+    }
+
+    private fun selectTextBox(id: Long) {
+        val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected }
+        val isEditable = selectedTextBox != null
+        _memeState.update {
+            it.copy(
+                textBoxes = it.textBoxes.map { box ->
+                    if (box.id == id) box.copy(isSelected = true, isEditable = isEditable)
+                    else box.copy(isSelected = false, isEditable = false)
                 },
                 shouldShowEditOptions = true
+            )
+        }
+    }
+
+    private fun editTextBox(id: Long) {
+        _memeState.update {
+            it.copy(
+                textBoxes = it.textBoxes.map { box ->
+                    if (box.id == id) box.copy(isSelected = true, isEditable = true)
+                    else box.copy(isSelected = false, isEditable = false)
+                }
             )
         }
     }
@@ -251,10 +276,23 @@ class MemeViewModel(
         }
     }
 
+    /**
+     * Unselect all text boxes and remove text boxes with no text
+     */
     private fun unselectAllTextBox() {
+        // Remove text boxes with no text
+        val emptyTextBox = _memeState.value.textBoxes.filter { it.text.isEmpty() }
+        if (emptyTextBox.isNotEmpty()) {
+            val allBox = _memeState.value.textBoxes.toMutableList()
+            allBox.removeAll(emptyTextBox)
+        }
+
+        // Unselect all text boxes
         _memeState.update {
             it.copy(
-                textBoxes = it.textBoxes.map { box -> box.copy(isSelected = false) },
+                textBoxes = it.textBoxes.map { box ->
+                    box.copy(isSelected = false, isEditable = false)
+                },
                 shouldShowEditOptions = false
             )
         }

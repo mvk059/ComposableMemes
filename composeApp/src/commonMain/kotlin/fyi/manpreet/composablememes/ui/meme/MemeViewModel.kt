@@ -146,7 +146,8 @@ class MemeViewModel(
             MemeEvent.EditorEvent.AddTextBox -> addTextBox()
             is MemeEvent.EditorEvent.RemoveTextBox -> removeTextBox(event.id)
             is MemeEvent.EditorEvent.UpdateTextBox -> updateTextBox(event.text)
-            is MemeEvent.EditorEvent.DeselectTextBox -> deselectTextBox()
+            is MemeEvent.EditorEvent.DeselectTextBox -> deselectTextBox(event.id, event.isSelected, event.isEditable)
+            is MemeEvent.EditorEvent.DeselectAllTextBox -> deselectAllTextBox()
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
@@ -154,7 +155,7 @@ class MemeViewModel(
             is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontColor -> onEditOptionsBottomBarFontColorSelection()
-            MemeEvent.EditorOptionsBottomBarEvent.Close -> deselectTextBox()
+            MemeEvent.EditorOptionsBottomBarEvent.Close -> deselectAllTextBox()
             MemeEvent.EditorOptionsBottomBarEvent.Done -> applyTextBoxStyle()
 
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.Font -> onFontItemSelection(event.id)
@@ -259,7 +260,18 @@ class MemeViewModel(
         }
     }
 
-    private fun deselectTextBox() {
+    private fun deselectTextBox(id: Long, selected: Boolean, editable: Boolean) {
+        _memeState.update {
+            it.copy(
+                textBoxes = it.textBoxes.map { box ->
+                    if (box.id == id) box.copy(isSelected = selected, isEditable = editable)
+                    else box
+                }
+            )
+        }
+    }
+
+    private fun deselectAllTextBox() {
         unselectAllTextBox()
     }
 

@@ -229,7 +229,13 @@ private fun Content(
             keyboardActions = KeyboardActions(
                 onDone = {
                     keyboardController?.hide()
-                    onDeselectClick(MemeEvent.EditorEvent.DeselectTextBox)
+                    onDeselectClick(
+                        MemeEvent.EditorEvent.DeselectTextBox(
+                            id = textBox.id,
+                            isSelected = true,
+                            isEditable = false
+                        )
+                    )
                 }
             ),
             singleLine = false,

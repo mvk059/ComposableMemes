@@ -15,7 +15,13 @@ sealed interface MemeEvent {
         data class UpdateTextBox(val text: String) : EditorEvent
         data class SelectTextBox(val id: Long) : EditorEvent
         data class EditTextBox(val id: Long) : EditorEvent
-        data object DeselectTextBox : EditorEvent
+        data class DeselectTextBox(
+            val id: Long,
+            val isSelected: Boolean = false,
+            val isEditable: Boolean = false
+        ) : EditorEvent
+
+        data object DeselectAllTextBox : EditorEvent
         data class PositionUpdate(val id: Long, val offset: Offset) : EditorEvent
     }
 

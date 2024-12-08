@@ -8,13 +8,13 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -34,10 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -77,18 +79,60 @@ fun MemeImage(
 ) {
 
     val image: DrawableResource = Res.allDrawableResources[meme.imageName] ?: return
-    var size by remember { mutableStateOf(IntSize.Zero) }
+    var imageContentSize by remember { mutableStateOf(Size.Zero) }
+    var imageContentOffset by remember { mutableStateOf(Offset.Zero) }
 
-    Image(
-        modifier = modifier.onGloballyPositioned { size = it.size },
-        painter = painterResource(image),
-        contentDescription = null,
-        contentScale = ContentScale.Fit,
-    )
+    val painter = painterResource(image)
+    val imageWidth = painter.intrinsicSize.width
+    val imageHeight = painter.intrinsicSize.height
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(bottom = MaterialTheme.spacing.bottomBarGapSize)
+    ) {
+        Image(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { clip = true }
+                .onGloballyPositioned { coordinates ->
+                    val containerWidth = coordinates.size.width
+                    val containerHeight = coordinates.size.height
+                    val actualWidth: Float
+                    val actualHeight: Float
+                    val offsetX: Float
+                    val offsetY: Float
+
+                    //  // Calculate aspect ratios
+                    val imageAspectRatio = imageWidth / imageHeight
+                    val containerAspectRatio = containerWidth.toFloat() / containerHeight
+
+                    if (imageAspectRatio > containerAspectRatio) {
+                        // Scale to container width, reduce height proportionally
+                        actualWidth = containerWidth.toFloat()
+                        actualHeight = containerWidth / imageAspectRatio
+                        offsetX = 0f
+                        offsetY = (containerHeight - actualHeight) / 2
+                    } else {
+                        // Scale to container height, reduce width proportionally
+                        actualWidth = containerHeight * imageAspectRatio
+                        actualHeight = containerHeight.toFloat()
+                        offsetX = (containerWidth - actualWidth) / 2
+                        offsetY = 0f
+                    }
+
+                    imageContentSize = Size(actualWidth, actualHeight)
+                    imageContentOffset = Offset(offsetX, offsetY)
+                },
+            painter = painter,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+        )
+    }
 
     Box(
         Modifier
-            .size(size.width.dp, size.height.dp)
+            .size(imageContentSize.width.dp, imageContentSize.height.dp)
 //            .clickable { onDeselectClick(MemeEvent.EditorEvent.DeselectTextBox) }
     ) {
 
@@ -119,12 +163,12 @@ fun MemeImage(
 
                                 val newValue = Offset(
                                     x = summed.x.coerceIn(
-                                        0f,
-                                        size.width.toFloat() - contentSize.width.toFloat()// - 12.dp.toPx()
+                                        imageContentOffset.x,
+                                        imageContentSize.width.toFloat() + imageContentOffset.x - contentSize.width.toFloat()// - 12.dp.toPx()
                                     ),
                                     y = summed.y.coerceIn(
-                                        0f,
-                                        size.height.toFloat() - contentSize.height.toFloat()// - 12.dp.toPx()
+                                        imageContentOffset.y,
+                                        imageContentSize.height.toFloat() + imageContentOffset.y - contentSize.height.toFloat()// - 12.dp.toPx()
                                     )
                                 )
 
@@ -176,7 +220,7 @@ private fun Content(
 
     Box(
         modifier = modifier
-            .wrapContentSize()
+//            .wrapContentSize()
             .then(
                 if (textBox.isSelected) Modifier.border(1.dp, Color.White)
                 else Modifier

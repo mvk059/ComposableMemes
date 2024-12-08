@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -65,6 +64,39 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
 
+/**
+ * Composable that displays the meme image and text boxes on top of it.
+ * The text boxes fits entirely inside the bounds of the image
+ *
+ * Logic of fitting the text boxes inside the image bounds:
+ *
+ * `ContentScale.Fit` - ContentScale.Fit is a scaling method that ensures:
+ * * The entire image is visible
+ * * No part of the image is cropped
+ * * Aspect ratio is maintained
+ * * The image fits completely within the container
+ *
+ * When ContentScale.Fit is used, the image will:
+ * * Scale to fit entirely within the container
+ * * Maintain its original proportions
+ * * Potentially create empty spaces (letterboxing) if the container's shape differs from the image's
+ *
+ * `OnGloballyPositioned calculation` - The onGloballyPositioned modifier is used to calculate the size and position of the image.
+ *
+ * Aspect Ratio - An aspect ratio is the proportional relationship between an image's width and height.
+ *
+ * If the aspect ratio of the original image without scaling is greater than the aspect ratio of the parent composable,
+ * the image will be scaled to fit the width of the parent composable and the height will be calculated based on the aspect ratio of the image.
+ * * scaled width: width of the parent composable
+ * * scaled height: width of the parent composable divided by the aspect ratio of the image
+ * * offsetX: 0 as the entire width of the image is visible
+ * * offsetY: Subtract the scaled image width from the parent composable height and divide by 2 to center the image horizontally
+ *
+ * If the aspect ratio of the original image without scaling is less than the aspect ratio of the parent composable,
+ * the image will be scaled to fit the height of the parent composable and the width will be calculated based on the aspect ratio of the image.
+ *
+ *
+ */
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun MemeImage(
@@ -94,7 +126,6 @@ fun MemeImage(
         Image(
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer { clip = true }
                 .onGloballyPositioned { coordinates ->
                     val containerWidth = coordinates.size.width
                     val containerHeight = coordinates.size.height

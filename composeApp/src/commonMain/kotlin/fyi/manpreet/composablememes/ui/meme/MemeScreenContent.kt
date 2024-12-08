@@ -3,7 +3,6 @@ package fyi.manpreet.composablememes.ui.meme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,7 +17,6 @@ import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
-import fyi.manpreet.composablememes.ui.theme.spacing
 
 @Composable
 fun MemeScreenContent(
@@ -62,8 +60,7 @@ fun MemeScreenContent(
             MemeImage(
                 modifier = Modifier
                     .fillMaxSize()
-                    .align(Alignment.Center)
-                    .padding(bottom = MaterialTheme.spacing.bottomBarGapSize),
+                    .align(Alignment.Center),
                 meme = meme,
                 textBoxes = textBoxes,
                 onPositionUpdate = onPositionUpdateEditor,

@@ -39,7 +39,6 @@ fun FontFamilyType.toFontFamily(): FontFamily {
         FontFamilyType.Jaro -> MaterialTheme.typographyFonts.jaro
         FontFamilyType.Lobster -> MaterialTheme.typographyFonts.lobster
         FontFamilyType.Manrope -> MaterialTheme.typographyFonts.manrope
-//        FontFamilyType.NotoSansSymbols -> MaterialTheme.typographyFonts.notoSansSymbols
         FontFamilyType.OpenSans -> MaterialTheme.typographyFonts.openSans
         FontFamilyType.Roboto -> MaterialTheme.typographyFonts.roboto
         FontFamilyType.RubrikDoodleShadow -> MaterialTheme.typographyFonts.rubrikDoodleShadow

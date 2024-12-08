@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
@@ -66,7 +65,7 @@ fun MemeBottomBarEditOptions(
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .height(80.dp),
+                .height(MaterialTheme.spacing.bottomBarSize),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {

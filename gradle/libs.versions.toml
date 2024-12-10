@@ -4,7 +4,7 @@ kotlin = "2.0.21"
 compose-multiplatform = "1.7.0"
 
 android-compileSdk = "35"
-android-minSdk = "26"
+android-minSdk = "29"
 android-targetSdk = "35"
 
 compose = "1.7.5"
@@ -25,6 +25,7 @@ sqlite = "2.5.0-alpha11"
 kermit = "2.0.4"
 multiplatformSettings = "1.2.0"
 composables-core = "1.20.0"
+skiko = "0.8.18"
 
 androidx-activityCompose = "1.9.3"
 androidx-appcompat = "1.7.0"
@@ -81,6 +82,7 @@ kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 multiplatformSettings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 composables-core = { module = "com.composables:core", version.ref = "composables-core" }
+skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

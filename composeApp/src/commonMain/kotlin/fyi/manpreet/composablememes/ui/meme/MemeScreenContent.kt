@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.meme.components.bottombar.MemeBottomBar
 import fyi.manpreet.composablememes.ui.meme.components.bottombar.MemeBottomBarEditOptions
@@ -17,10 +19,10 @@ import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
+import kotlinx.coroutines.launch
 
 @Composable
 fun MemeScreenContent(
-    modifier: Modifier = Modifier,
     meme: Meme?,
     textBoxes: List<MemeTextBox>,
     editorOptionsBottomBar: MemeEditorOptions,
@@ -31,6 +33,7 @@ fun MemeScreenContent(
     onCancelClickDialog: (MemeEvent.TopBarEvent) -> Unit,
     onBackClickDialog: () -> Unit,
     onAddTextBottomBar: (MemeEvent.EditorEvent) -> Unit,
+    onSaveImageBottomBar: (MemeEvent.EditorEvent) -> Unit,
     onPositionUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClickEditor: (MemeEvent.EditorEvent) -> Unit,
@@ -43,6 +46,9 @@ fun MemeScreenContent(
 ) {
 
     if (meme == null) return
+
+    val scope = rememberCoroutineScope()
+    val graphicsLayer = rememberGraphicsLayer()
 
     Scaffold(
         topBar = {
@@ -63,6 +69,7 @@ fun MemeScreenContent(
                     .align(Alignment.Center),
                 meme = meme,
                 textBoxes = textBoxes,
+                graphicsLayer = graphicsLayer,
                 onPositionUpdate = onPositionUpdateEditor,
                 onTextBoxClick = onTextBoxClickEditor,
                 onTextBoxCloseClick = onTextBoxCloseClickEditor,
@@ -84,6 +91,11 @@ fun MemeScreenContent(
                 MemeBottomBar(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     onAddText = onAddTextBottomBar,
+                    onSaveImage = {
+                        scope.launch {
+                            onSaveImageBottomBar(MemeEvent.EditorEvent.SaveImage(graphicsLayer.toImageBitmap()))
+                        }
+                    },
                 )
             }
         }

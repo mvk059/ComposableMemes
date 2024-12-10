@@ -6,15 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,24 +15,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
@@ -103,6 +95,7 @@ fun MemeImage(
     modifier: Modifier = Modifier,
     meme: Meme,
     textBoxes: List<MemeTextBox>,
+    graphicsLayer: GraphicsLayer,
     onPositionUpdate: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxClick: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClick: (MemeEvent.EditorEvent) -> Unit,
@@ -113,117 +106,134 @@ fun MemeImage(
     val image: DrawableResource = Res.allDrawableResources[meme.imageName] ?: return
     var imageContentSize by remember { mutableStateOf(Size.Zero) }
     var imageContentOffset by remember { mutableStateOf(Offset.Zero) }
+    var rect by remember { mutableStateOf(Rect.Zero) }
 
     val painter = painterResource(image)
     val imageWidth = painter.intrinsicSize.width
     val imageHeight = painter.intrinsicSize.height
 
+    var composableView by remember { mutableStateOf<Any?>(null) }
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .padding(bottom = MaterialTheme.spacing.bottomBarGapSize)
-    ) {
-        Image(
-            modifier = Modifier
-                .fillMaxSize()
-                .onGloballyPositioned { coordinates ->
-                    val containerWidth = coordinates.size.width
-                    val containerHeight = coordinates.size.height
-                    val actualWidth: Float
-                    val actualHeight: Float
-                    val offsetX: Float
-                    val offsetY: Float
-
-                    //  // Calculate aspect ratios
-                    val imageAspectRatio = imageWidth / imageHeight
-                    val containerAspectRatio = containerWidth.toFloat() / containerHeight
-
-                    if (imageAspectRatio > containerAspectRatio) {
-                        // Scale to container width, reduce height proportionally
-                        actualWidth = containerWidth.toFloat()
-                        actualHeight = containerWidth / imageAspectRatio
-                        offsetX = 0f
-                        offsetY = (containerHeight - actualHeight) / 2
-                    } else {
-                        // Scale to container height, reduce width proportionally
-                        actualWidth = containerHeight * imageAspectRatio
-                        actualHeight = containerHeight.toFloat()
-                        offsetX = (containerWidth - actualWidth) / 2
-                        offsetY = 0f
+            .drawWithCache {
+                onDrawWithContent {
+                    graphicsLayer.record {
+                        this@onDrawWithContent.drawContent()
                     }
-
-                    imageContentSize = Size(actualWidth, actualHeight)
-                    imageContentOffset = Offset(offsetX, offsetY)
-                },
-            painter = painter,
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-        )
-    }
-
-    Box(
-        Modifier
-            .size(imageContentSize.width.dp, imageContentSize.height.dp)
-//            .clickable { onDeselectClick(MemeEvent.EditorEvent.DeselectTextBox) }
+                    drawLayer(graphicsLayer)
+                }
+            }
     ) {
 
-        textBoxes.forEach { textBox ->
-            var contentSize by remember { mutableStateOf(IntSize.Zero) }
-            var localOffset by remember(textBox.id) { mutableStateOf(textBox.offset) }
 
-            Box(
+        Box {
+            Image(
                 modifier = Modifier
-                    .offset {
-                        IntOffset(x = localOffset.x.roundToInt(), y = localOffset.y.roundToInt())
-                    }
-                    .pointerInput(textBox.id) {
-                        detectTapGestures(
-                            onTap = {
-                                onTextBoxClick(MemeEvent.EditorEvent.SelectTextBox(textBox.id))
-                            },
-                            onDoubleTap = {
-                                onTextBoxClick(MemeEvent.EditorEvent.EditTextBox(textBox.id))
-                            }
+                    .fillMaxSize()
+                    .onGloballyPositioned { coordinates ->
+                        val containerWidth = coordinates.size.width
+                        val containerHeight = coordinates.size.height
+                        val actualWidth: Float
+                        val actualHeight: Float
+                        val offsetX: Float
+                        val offsetY: Float
+
+                        //  // Calculate aspect ratios
+                        val imageAspectRatio = imageWidth / imageHeight
+                        val containerAspectRatio = containerWidth.toFloat() / containerHeight
+
+                        if (imageAspectRatio > containerAspectRatio) {
+                            // Scale to container width, reduce height proportionally
+                            actualWidth = containerWidth.toFloat()
+                            actualHeight = containerWidth / imageAspectRatio
+                            offsetX = 0f
+                            offsetY = (containerHeight - actualHeight) / 2
+                        } else {
+                            // Scale to container height, reduce width proportionally
+                            actualWidth = containerHeight * imageAspectRatio
+                            actualHeight = containerHeight.toFloat()
+                            offsetX = (containerWidth - actualWidth) / 2
+                            offsetY = 0f
+                        }
+
+                        imageContentSize = Size(actualWidth, actualHeight)
+                        imageContentOffset = Offset(offsetX, offsetY)
+                        composableView = coordinates.findRootCoordinates()
+                        rect = Rect(
+                            imageContentOffset.x,
+                            imageContentSize.width,
+                            imageContentOffset.y,
+                            imageContentSize.height
                         )
-                    }
-                    .pointerInput(textBox.id) {
-                        detectDragGestures(
-                            onDrag = { _, dragAmount ->
-                                val original = localOffset
-                                val summed = original + dragAmount
+                        println(composableView)
+                    },
+                painter = painter,
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+            )
+        }
 
-                                val newValue = Offset(
-                                    x = summed.x.coerceIn(
-                                        imageContentOffset.x,
-                                        imageContentSize.width.toFloat() + imageContentOffset.x - contentSize.width.toFloat()// - 12.dp.toPx()
-                                    ),
-                                    y = summed.y.coerceIn(
-                                        imageContentOffset.y,
-                                        imageContentSize.height.toFloat() + imageContentOffset.y - contentSize.height.toFloat()// - 12.dp.toPx()
+        Box(
+            Modifier
+                .size(imageContentSize.width.dp, imageContentSize.height.dp)
+//            .clickable { onDeselectClick(MemeEvent.EditorEvent.DeselectTextBox) }
+        ) {
+
+            textBoxes.forEach { textBox ->
+                var contentSize by remember { mutableStateOf(IntSize.Zero) }
+                var localOffset by remember(textBox.id) { mutableStateOf(textBox.offset) }
+
+                Box(
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(x = localOffset.x.roundToInt(), y = localOffset.y.roundToInt())
+                        }
+                        .pointerInput(textBox.id) {
+                            detectTapGestures(
+                                onTap = {
+                                    onTextBoxClick(MemeEvent.EditorEvent.SelectTextBox(textBox.id))
+                                },
+                                onDoubleTap = {
+                                    onTextBoxClick(MemeEvent.EditorEvent.EditTextBox(textBox.id))
+                                }
+                            )
+                        }
+                        .pointerInput(textBox.id) {
+                            detectDragGestures(
+                                onDrag = { _, dragAmount ->
+                                    val original = localOffset
+                                    val summed = original + dragAmount
+
+                                    val newValue = Offset(
+                                        x = summed.x.coerceIn(
+                                            imageContentOffset.x,
+                                            imageContentSize.width + imageContentOffset.x - contentSize.width.toFloat()
+                                        ),
+                                        y = summed.y.coerceIn(
+                                            imageContentOffset.y,
+                                            imageContentSize.height + imageContentOffset.y - contentSize.height.toFloat()
+                                        )
                                     )
-                                )
 
-                                localOffset = newValue
-                            },
-                            onDragEnd = {
-                                onPositionUpdate(
-                                    MemeEvent.EditorEvent.PositionUpdate(
-                                        textBox.id,
-                                        localOffset
-                                    )
-                                )
-                            }
-                        )
-                    }
-            ) {
-
-                Content(
-                    textBox = textBox,
-                    onTextBoxTextChange = onTextBoxTextChange,
-                    onTextBoxCloseClick = onTextBoxCloseClick,
-                    onDeselectClick = onDeselectClick,
-                    onSizeChange = { contentSize = it }
-                )
+                                    localOffset = newValue
+                                },
+                                onDragEnd = {
+                                    onPositionUpdate(MemeEvent.EditorEvent.PositionUpdate(textBox.id, localOffset))
+                                }
+                            )
+                        }
+                ) {
+                    Content(
+                        textBox = textBox,
+                        onTextBoxTextChange = onTextBoxTextChange,
+                        onTextBoxCloseClick = onTextBoxCloseClick,
+                        onDeselectClick = onDeselectClick,
+                        onSizeChange = { contentSize = it }
+                    )
+                }
             }
         }
     }
@@ -251,7 +261,6 @@ private fun Content(
 
     Box(
         modifier = modifier
-//            .wrapContentSize()
             .then(
                 if (textBox.isSelected) Modifier.border(1.dp, Color.White)
                 else Modifier

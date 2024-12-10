@@ -2,6 +2,7 @@ package fyi.manpreet.composablememes.ui.meme
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,14 +12,10 @@ import composablememes.composeapp.generated.resources.ic_font_color
 import composablememes.composeapp.generated.resources.ic_font_size
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.repository.MemeRepository
+import fyi.manpreet.composablememes.platform.filemanager.FileManager
 import fyi.manpreet.composablememes.ui.meme.mapper.SliderValue
 import fyi.manpreet.composablememes.ui.meme.mapper.sliderValueToFontSize
-import fyi.manpreet.composablememes.ui.meme.state.FontFamilyType
-import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
-import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
-import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
-import fyi.manpreet.composablememes.ui.meme.state.MemeState
-import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
+import fyi.manpreet.composablememes.ui.meme.state.*
 import fyi.manpreet.composablememes.util.MemeConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -33,6 +30,7 @@ import kotlin.random.Random
 
 class MemeViewModel(
     private val repository: MemeRepository,
+    private val fileManager: FileManager,
 ) : ViewModel() {
 
     private val _memeState = MutableStateFlow(MemeState())
@@ -151,6 +149,7 @@ class MemeViewModel(
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
+            is MemeEvent.EditorEvent.SaveImage -> saveImage(event.imageBitmap)
 
             is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
@@ -286,6 +285,29 @@ class MemeViewModel(
                 else box
             })
         }
+    }
+
+    private fun saveImage(imageBitmap: ImageBitmap) {
+        println(imageBitmap)
+        viewModelScope.launch {
+            saveImageInStorage(imageBitmap)
+        }
+    }
+
+    private suspend fun saveImageInStorage(imageBitmap: ImageBitmap) {
+        try {
+            saveImage("x.jpg", imageBitmap)
+        } catch (e: Exception) {
+            println("Error saving image: ${e.message}")
+        }
+    }
+
+    private suspend fun saveImage(filename: String, image: ImageBitmap) {
+        fileManager.saveImage(image, filename)
+    }
+
+    private suspend fun readImage(fileName: String): ImageBitmap? {
+        return fileManager.loadImage(fileName)
     }
 
     /**

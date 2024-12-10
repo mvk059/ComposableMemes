@@ -9,12 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,13 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import composablememes.composeapp.generated.resources.Res
-import composablememes.composeapp.generated.resources.ic_redo
-import composablememes.composeapp.generated.resources.ic_undo
-import composablememes.composeapp.generated.resources.meme_bottom_bar_add_text
-import composablememes.composeapp.generated.resources.meme_bottom_bar_redo_cd
-import composablememes.composeapp.generated.resources.meme_bottom_bar_save_meme
-import composablememes.composeapp.generated.resources.meme_bottom_bar_undo_cd
+import composablememes.composeapp.generated.resources.*
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.theme.fixedAccentColors
 import fyi.manpreet.composablememes.ui.theme.gradient
@@ -40,6 +29,7 @@ import org.jetbrains.compose.resources.stringResource
 fun MemeBottomBar(
     modifier: Modifier = Modifier,
     onAddText: (MemeEvent.EditorEvent) -> Unit,
+    onSaveImage: () -> Unit,
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -94,7 +84,7 @@ fun MemeBottomBar(
             ),
             colors = ButtonDefaults.buttonColors().copy(containerColor = Color.Transparent),
             interactionSource = interactionSource,
-            onClick = {},
+            onClick = { onSaveImage() },
             content = {
                 Text(
                     text = stringResource(Res.string.meme_bottom_bar_save_meme),

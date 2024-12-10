@@ -71,6 +71,7 @@ kotlin {
 
             implementation(libs.kermit)
             implementation(libs.composables.core)
+            implementation(libs.skiko)
         }
     }
 }

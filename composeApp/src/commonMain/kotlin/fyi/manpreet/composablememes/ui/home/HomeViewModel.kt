@@ -84,6 +84,7 @@ class HomeViewModel(
 
     @OptIn(ExperimentalResourceApi::class)
     private fun onFabClick() {
+        onCancel()
         val allMemes = Res.allDrawableResources
             .filter { it.key.endsWith("Meme") }
             .toMemeListBottomSheet()

@@ -17,7 +17,7 @@ import androidx.navigation.NavController
 import com.composables.core.SheetDetent.Companion.FullyExpanded
 import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
-import fyi.manpreet.composablememes.data.mapper.Peek
+import fyi.manpreet.composablememes.util.Peek
 import fyi.manpreet.composablememes.ui.home.components.bottomsheet.MemeListBottomSheet
 import fyi.manpreet.composablememes.ui.home.components.delete.DeleteDialog
 import fyi.manpreet.composablememes.ui.home.components.empty.HomeScreenEmpty
@@ -58,7 +58,6 @@ fun HomeScreen(
 
     LaunchedEffect(shouldReload?.value) {
         if (shouldReload?.value == true) {
-            println("OnReload")
             onReload(HomeEvent.OnReload)
             navController.currentBackStackEntry?.savedStateHandle?.set(MemeConstants.NAVIGATE_BACK_RELOAD, false)
         }

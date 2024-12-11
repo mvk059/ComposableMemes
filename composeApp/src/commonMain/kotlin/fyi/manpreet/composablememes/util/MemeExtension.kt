@@ -1,4 +1,4 @@
-package fyi.manpreet.composablememes.data.mapper
+package fyi.manpreet.composablememes.util
 
 import com.composables.core.SheetDetent
 

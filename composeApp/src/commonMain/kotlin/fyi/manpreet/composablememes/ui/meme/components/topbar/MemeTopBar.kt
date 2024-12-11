@@ -33,7 +33,7 @@ fun MemeTopBar(
         },
         navigationIcon = {
             IconButton(
-                onClick = { onBackClick(MemeEvent.TopBarEvent.BackConfirm) },
+                onClick = { onBackClick(MemeEvent.TopBarEvent.ConfirmBack) },
                 content = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,

@@ -25,4 +25,5 @@ sealed interface HomeEvent {
         data object OnDelete : TopBarEvent
     }
 
+    data object OnReload : HomeEvent
 }

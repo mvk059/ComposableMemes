@@ -36,7 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun BackConfirmationDialog(
     modifier: Modifier = Modifier,
-    onBack: () -> Unit,
+    onBack: (MemeEvent.TopBarEvent) -> Unit,
     onCancel: (MemeEvent.TopBarEvent) -> Unit
 ) {
 
@@ -102,7 +102,7 @@ fun BackConfirmationDialog(
                         TextButton(
                             onClick = {
                                 dialogState.visible = false
-                                onBack()
+                                onBack(MemeEvent.TopBarEvent.GoBack)
                             },
                             content = {
                                 Text(

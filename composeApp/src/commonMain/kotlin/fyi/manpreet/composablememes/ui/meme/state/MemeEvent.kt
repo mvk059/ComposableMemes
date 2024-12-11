@@ -6,7 +6,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 sealed interface MemeEvent {
 
     sealed interface TopBarEvent : MemeEvent {
-        data object BackConfirm : TopBarEvent
+        data object ConfirmBack : TopBarEvent
+        data object GoBack : TopBarEvent
         data object Cancel : TopBarEvent
     }
 

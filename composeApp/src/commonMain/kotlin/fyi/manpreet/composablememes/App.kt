@@ -13,6 +13,7 @@ import fyi.manpreet.composablememes.ui.home.HomeViewModel
 import fyi.manpreet.composablememes.ui.home.HomeScreen
 import fyi.manpreet.composablememes.ui.meme.MemeScreen
 import fyi.manpreet.composablememes.ui.theme.MemeTheme
+import fyi.manpreet.composablememes.util.MemeConstants
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -35,6 +36,7 @@ fun App(
             composable<HomeDestination> {
 
                 HomeScreen(
+                    navController = navController,
                     homeState = homeState.value,
                     memeListBottomSheet = allMemes.value,
                     onFabClick = viewModel::onEvent,
@@ -53,6 +55,7 @@ fun App(
                     onDeleteClickTopBar = viewModel::onEvent,
                     onCancelClickDialog = viewModel::onEvent,
                     onDeleteClickDialog = viewModel::onEvent,
+                    onReload = viewModel::onEvent,
                 )
             }
 
@@ -60,7 +63,10 @@ fun App(
                 val args = it.toRoute<MemeDestination>()
                 MemeScreen(
                     memeName = args.memeName,
-                    navigateBack = { navController.navigateUp() }
+                    navigateBack = {
+                        navController.previousBackStackEntry?.savedStateHandle?.set(MemeConstants.NAVIGATE_BACK_RELOAD, true)
+                        navController.popBackStack()
+                    },
                 )
             }
         }

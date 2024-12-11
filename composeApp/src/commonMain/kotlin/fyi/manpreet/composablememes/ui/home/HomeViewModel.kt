@@ -75,6 +75,7 @@ class HomeViewModel(
             is HomeEvent.TopBarEvent.OnShare -> onShare()
             is HomeEvent.TopBarEvent.OnDeleteConfirm -> onDeleteConfirm(event.value)
             is HomeEvent.TopBarEvent.OnDelete -> onDelete()
+            HomeEvent.OnReload -> initHomeState()
         }
     }
 
@@ -106,10 +107,6 @@ class HomeViewModel(
     private fun onBottomSheetMemeClick(meme: Meme) {
         resetSearchText()
         return
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.insertMeme(meme)
-            updateList(sortType = _homeState.value.selectedSortType)
-        }
     }
 
     private fun onMemeFavoriteClick(id: Long) {
@@ -173,6 +170,7 @@ class HomeViewModel(
     private fun onDelete() {
         onDeleteConfirm(false)
         viewModelScope.launch(Dispatchers.IO) {
+            // TODO Delete from file
             val memes = _homeState.value.memes.filter { it.isSelected }
             repository.deleteMemes(memes)
             onCancel()

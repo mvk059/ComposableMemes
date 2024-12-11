@@ -9,8 +9,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.composables.core.SheetDetent.Companion.FullyExpanded
 import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
@@ -25,10 +28,12 @@ import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 import fyi.manpreet.composablememes.ui.home.state.HomeState
 import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
 import fyi.manpreet.composablememes.ui.theme.spacing
+import fyi.manpreet.composablememes.util.MemeConstants
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    navController: NavController,
     homeState: HomeState,
     memeListBottomSheet: MemeListBottomSheet,
     onFabClick: (HomeEvent.BottomSheetEvent) -> Unit,
@@ -43,8 +48,21 @@ fun HomeScreen(
     onShareClickTopBar: (HomeEvent.TopBarEvent) -> Unit,
     onDeleteClickTopBar: (HomeEvent.TopBarEvent) -> Unit,
     onCancelClickDialog: (HomeEvent.TopBarEvent) -> Unit,
-    onDeleteClickDialog: (HomeEvent.TopBarEvent) -> Unit
+    onDeleteClickDialog: (HomeEvent.TopBarEvent) -> Unit,
+    onReload: (HomeEvent) -> Unit,
 ) {
+
+    val shouldReload = navController.currentBackStackEntry?.savedStateHandle
+        ?.getStateFlow(MemeConstants.NAVIGATE_BACK_RELOAD, false)
+        ?.collectAsStateWithLifecycle()
+
+    LaunchedEffect(shouldReload?.value) {
+        if (shouldReload?.value == true) {
+            println("OnReload")
+            onReload(HomeEvent.OnReload)
+            navController.currentBackStackEntry?.savedStateHandle?.set(MemeConstants.NAVIGATE_BACK_RELOAD, false)
+        }
+    }
 
     val sheetState = rememberModalBottomSheetState(
         initialDetent = Hidden,

@@ -12,9 +12,17 @@ fun MemeScreen(
     navigateBack: () -> Unit,
 ) {
     val memeState = viewModel.memeState.collectAsStateWithLifecycle()
+    val onNavigateBack = viewModel.navigateBackStatus.collectAsStateWithLifecycle()
 
+    // TODO Remove and test this (onStart)
     LaunchedEffect(Unit) {
         viewModel.loadMeme(memeName)
+    }
+
+    LaunchedEffect(onNavigateBack.value) {
+        if (onNavigateBack.value) {
+            navigateBack()
+        }
     }
 
     MemeScreenContent(
@@ -26,7 +34,7 @@ fun MemeScreen(
         shouldShowEditOptions = memeState.value.shouldShowEditOptions,
         onBackConfirmClickTopBar = viewModel::onEvent,
         onCancelClickDialog = viewModel::onEvent,
-        onBackClickDialog = navigateBack,
+        onBackClickDialog = viewModel::onEvent,
         onAddTextBottomBar = viewModel::onEvent,
         onSaveImageBottomBar = viewModel::onEvent,
         onPositionUpdateEditor = viewModel::onEvent,
@@ -39,5 +47,4 @@ fun MemeScreen(
         onFontSizeChangeBottomBar = viewModel::onEvent,
         onFontColorSelectBottomBar = viewModel::onEvent,
     )
-
 }

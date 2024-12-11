@@ -31,7 +31,7 @@ fun MemeScreenContent(
     shouldShowEditOptions: Boolean,
     onBackConfirmClickTopBar: (MemeEvent.TopBarEvent) -> Unit,
     onCancelClickDialog: (MemeEvent.TopBarEvent) -> Unit,
-    onBackClickDialog: () -> Unit,
+    onBackClickDialog: (MemeEvent.TopBarEvent) -> Unit,
     onAddTextBottomBar: (MemeEvent.EditorEvent) -> Unit,
     onSaveImageBottomBar: (MemeEvent.EditorEvent) -> Unit,
     onPositionUpdateEditor: (MemeEvent.EditorEvent) -> Unit,

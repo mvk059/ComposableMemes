@@ -2,8 +2,11 @@ package fyi.manpreet.composablememes.platform.filemanager
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import arrow.core.raise.Raise
 import arrow.core.raise.catch
 import arrow.core.raise.ensure
@@ -38,7 +41,7 @@ actual class FileManager(
     }
 
     actual suspend fun Raise<String>.deleteImage(fileName: String) {
-         withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             val activity = mainActivityUseCase.requireActivity()
 
             catch(
@@ -52,27 +55,32 @@ actual class FileManager(
             )
         }
     }
-/*
-    actual suspend fun loadImage(fileName: String): ImageBitmap? {
+
+    actual suspend fun Raise<String>.cropImage(imageBitmap: ImageBitmap, offset: Offset, size: Size): ImageBitmap {
         return withContext(Dispatchers.IO) {
-            try {
-                mainActivityUseCase.requireActivity().openFileInput(fileName).use { inputStream ->
-                    val androidBitmap = BitmapFactory.decodeStream(inputStream)
-                    androidBitmap.asImageBitmap()
+
+            catch(
+                catch = { e -> throw Exception("Failed to crop image: ${e.message}") },
+                block = {
+                    val androidBitmap = imageBitmap.asAndroidBitmap()
+                    val croppedBitmap = Bitmap.createBitmap(
+                        androidBitmap,
+                        offset.x.toInt(),
+                        offset.y.toInt(),
+                        size.width.toInt(),
+                        size.height.toInt(),
+                    )
+                    croppedBitmap.asImageBitmap()
                 }
-            } catch (e: Exception) {
-                println("Failed to read image: ${e.message}")
-                null
-            }
+            )
         }
     }
 
-    actual suspend fun loadAllImages(): List<ImageBitmap> {
-        return withContext(Dispatchers.IO) {
-            val files = mainActivityUseCase.requireActivity().filesDir.listFiles()
-            files?.mapNotNull { file ->
+    /*
+        actual suspend fun loadImage(fileName: String): ImageBitmap? {
+            return withContext(Dispatchers.IO) {
                 try {
-                    mainActivityUseCase.requireActivity().openFileInput(file.name).use { inputStream ->
+                    mainActivityUseCase.requireActivity().openFileInput(fileName).use { inputStream ->
                         val androidBitmap = BitmapFactory.decodeStream(inputStream)
                         androidBitmap.asImageBitmap()
                     }
@@ -80,28 +88,44 @@ actual class FileManager(
                     println("Failed to read image: ${e.message}")
                     null
                 }
-            } ?: emptyList()
+            }
         }
-    }
 
-    actual suspend fun platformGetImageReferences(): List<ImageReference> {
-         return withContext(Dispatchers.IO) {
-            val files = mainActivityUseCase.requireActivity().filesDir.listFiles()
-             files?.mapNotNull { file ->
-                 if (file.name.endsWith(".jpg").not()) return@mapNotNull null
-
-                 try {
-                     ImageReference(
-                         id = file.name,
-                         path = file.path,
-                     )
-                 } catch (e: Exception) {
-                     println("Failed to read image: ${e.message}")
-                     null
-                 }
-             } ?: emptyList()
+        actual suspend fun loadAllImages(): List<ImageBitmap> {
+            return withContext(Dispatchers.IO) {
+                val files = mainActivityUseCase.requireActivity().filesDir.listFiles()
+                files?.mapNotNull { file ->
+                    try {
+                        mainActivityUseCase.requireActivity().openFileInput(file.name).use { inputStream ->
+                            val androidBitmap = BitmapFactory.decodeStream(inputStream)
+                            androidBitmap.asImageBitmap()
+                        }
+                    } catch (e: Exception) {
+                        println("Failed to read image: ${e.message}")
+                        null
+                    }
+                } ?: emptyList()
+            }
         }
-    }
 
- */
+        actual suspend fun platformGetImageReferences(): List<ImageReference> {
+             return withContext(Dispatchers.IO) {
+                val files = mainActivityUseCase.requireActivity().filesDir.listFiles()
+                 files?.mapNotNull { file ->
+                     if (file.name.endsWith(".jpg").not()) return@mapNotNull null
+
+                     try {
+                         ImageReference(
+                             id = file.name,
+                             path = file.path,
+                         )
+                     } catch (e: Exception) {
+                         println("Failed to read image: ${e.message}")
+                         null
+                     }
+                 } ?: emptyList()
+            }
+        }
+
+     */
 }

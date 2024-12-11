@@ -1,5 +1,7 @@
 package fyi.manpreet.composablememes.platform.filemanager
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import arrow.core.raise.Raise
@@ -64,8 +66,36 @@ actual class FileManager {
                         NSUserDomainMask
                     ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
-                    val fileURL = documentDirectory.URLByAppendingPathComponent(fileName) ?: raise("Failed to get file URL")
+                    val fileURL =
+                        documentDirectory.URLByAppendingPathComponent(fileName) ?: raise("Failed to get file URL")
                     ensure(fileManager.removeItemAtURL(fileURL, null)) { "Failed to delete file" }
+                }
+            )
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    actual suspend fun Raise<String>.cropImage(imageBitmap: ImageBitmap, offset: Offset, size: Size): ImageBitmap {
+        return withContext(Dispatchers.IO) {
+
+            catch(
+                catch = { e -> throw Exception("Failed to crop image: ${e.message}") },
+                block = {
+                    val uiImage = imageBitmap.toUIImage()
+
+                    val scale = uiImage?.scale ?: 1.0
+                    val cropRect = CGRectMake(
+                        offset.x * scale,
+                        offset.y * scale,
+                        size.width * scale,
+                        size.height * scale
+                    )
+
+                    val cgImage = uiImage?.CGImage
+                    val croppedCGImage = CGImageCreateWithImageInRect(cgImage, cropRect)
+                    val croppedUIImage = UIImage.imageWithCGImage(croppedCGImage)
+
+                    croppedUIImage.toImageBitmap()
                 }
             )
         }

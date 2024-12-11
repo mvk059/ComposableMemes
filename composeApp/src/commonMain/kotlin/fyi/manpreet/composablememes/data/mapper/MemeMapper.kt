@@ -11,11 +11,15 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.DrawableResource
 
 fun Meme.toMemeTable(): MemeTable {
+    val path = this.path
+    requireNotNull(path) { "Path cannot be null" }
+
     return MemeTable(
         id = id,
         imageUrl = imageName,
         createdDateInMillis = createdDate.toInstant(TimeZone.currentSystemDefault())
             .toEpochMilliseconds(),
+        path = path,
         isFavorite = isFavorite,
     )
 }
@@ -29,6 +33,7 @@ fun MemeTable.toMeme(): Meme {
         imageName = imageUrl,
         createdDate = Instant.fromEpochMilliseconds(createdDateInMillis)
             .toLocalDateTime(TimeZone.currentSystemDefault()),
+        path = path,
         isFavorite = isFavorite,
         isSelected = false,
     )
@@ -45,6 +50,7 @@ fun Map<String, DrawableResource>.toMemeListBottomSheet(): MemeListBottomSheet {
         Meme(
             imageName = key,
             createdDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+            path = key,
             isFavorite = false,
             isSelected = false,
         )

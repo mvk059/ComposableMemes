@@ -8,6 +8,7 @@ data class Meme(
     val id: Long = INVALID_ID,
     val imageName: String,
     val createdDate: LocalDateTime,
+    val path: String? = null,
     val isFavorite: Boolean = false,
     val isSelected: Boolean = false,
 ) {

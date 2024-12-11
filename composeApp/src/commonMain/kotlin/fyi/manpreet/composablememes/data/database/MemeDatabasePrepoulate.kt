@@ -25,13 +25,15 @@ fun prepopulateDatabase(): RoomDatabase.Callback {
                     val meme = MemeTable(
                         imageUrl = key,
                         createdDateInMillis = Clock.System.now().toEpochMilliseconds(),
+                        path = "",
                         isFavorite = false
                     )
                     connection.prepare("INSERT INTO ${DatabaseConstants.TABLE_NAME} (imageUrl, createdDateInMillis, isFavorite) VALUES (?, ?, ?)")
                         .use { statement ->
                             statement.bindText(1, meme.imageUrl)
                             statement.bindLong(2, meme.createdDateInMillis)
-                            statement.bindLong(3, if (meme.isFavorite) 1 else 0)
+                            statement.bindText(3, meme.path)
+                            statement.bindLong(4, if (meme.isFavorite) 1 else 0)
                             statement.step()
                             statement.close()
                         }

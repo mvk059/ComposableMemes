@@ -166,7 +166,7 @@ fun MemeImage(
         Box(
             Modifier
                 .size(imageContentSize.width.dp, imageContentSize.height.dp)
-//            .clickable { onDeselectClick(MemeEvent.EditorEvent.DeselectTextBox) }
+                .clickable { onDeselectClick(MemeEvent.EditorEvent.DeselectAllTextBox) }
         ) {
 
             textBoxes.forEach { textBox ->
@@ -264,7 +264,7 @@ private fun Content(
             modifier = Modifier
                 .width(IntrinsicSize.Min)
                 .height(IntrinsicSize.Min)
-                .padding(MaterialTheme.spacing.small)
+                .padding(MaterialTheme.spacing.extraSmall)
                 .imePadding(),
             enabled = false,
             readOnly = true,
@@ -286,7 +286,7 @@ private fun Content(
             modifier = Modifier
                 .width(IntrinsicSize.Min)
                 .height(IntrinsicSize.Min)
-                .padding(MaterialTheme.spacing.small)
+                .padding(MaterialTheme.spacing.extraSmall)
                 .imePadding()
                 .focusRequester(focusRequester),
             enabled = textBox.isEditable,

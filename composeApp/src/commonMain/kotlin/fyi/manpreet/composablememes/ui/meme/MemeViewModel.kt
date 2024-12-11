@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import arrow.core.raise.either
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.ic_font
 import composablememes.composeapp.generated.resources.ic_font_color
@@ -35,6 +36,9 @@ class MemeViewModel(
 
     private val _memeState = MutableStateFlow(MemeState())
     val memeState = _memeState.asStateFlow()
+
+    private val _navigateBackStatus = MutableStateFlow(false)
+    val navigateBackStatus = _navigateBackStatus.asStateFlow()
 
     fun loadMeme(memeName: String) {
         _memeState.update {
@@ -138,7 +142,8 @@ class MemeViewModel(
 
     fun onEvent(event: MemeEvent) {
         when (event) {
-            MemeEvent.TopBarEvent.BackConfirm -> onBackConfirmTopBar()
+            MemeEvent.TopBarEvent.ConfirmBack -> onBackConfirmTopBar()
+            MemeEvent.TopBarEvent.GoBack -> onGoBack()
             MemeEvent.TopBarEvent.Cancel -> onCancelTopBar()
 
             MemeEvent.EditorEvent.AddTextBox -> addTextBox()
@@ -172,6 +177,10 @@ class MemeViewModel(
 
     private fun onBackConfirmTopBar() {
         _memeState.update { it.copy(isBackDialogVisible = true) }
+    }
+
+    private fun onGoBack() {
+        _navigateBackStatus.update { true }
     }
 
     private fun onCancelTopBar() {
@@ -290,24 +299,30 @@ class MemeViewModel(
     private fun saveImage(imageBitmap: ImageBitmap) {
         println(imageBitmap)
         viewModelScope.launch {
-            saveImageInStorage(imageBitmap)
+            val meme = _memeState.value.meme
+            requireNotNull(meme) { "Meme object cannot be null while saving" }
+
+            val imageName = meme.imageName
+            val pathName = "${imageName}_${Clock.System.now().epochSeconds}.jpg"
+            saveImage(imageName, pathName, imageBitmap)
         }
     }
 
-    private suspend fun saveImageInStorage(imageBitmap: ImageBitmap) {
-        try {
-            saveImage("x.jpg", imageBitmap)
-        } catch (e: Exception) {
-            println("Error saving image: ${e.message}")
-        }
-    }
+    private suspend fun saveImage(imageName: String, pathName: String, imageBitmap: ImageBitmap) {
+        either {
+            // The `this` inside either block is now Raise<String>
+            with(fileManager) { this@either.saveImage(imageBitmap, pathName) }
+        }.fold(
+            ifLeft = { println("Error saving image: $it") },
+            ifRight = { path ->
+                println("Image saved successfully: $path")
+                val meme = _memeState.value.meme
+                requireNotNull(meme) { "Meme object cannot be null while saving" }
 
-    private suspend fun saveImage(filename: String, image: ImageBitmap) {
-        fileManager.saveImage(image, filename)
-    }
-
-    private suspend fun readImage(fileName: String): ImageBitmap? {
-        return fileManager.loadImage(fileName)
+                repository.insertMeme(meme.copy(imageName = imageName, path = path))
+                _navigateBackStatus.update { true }
+            }
+        )
     }
 
     /**

@@ -2,9 +2,15 @@ package fyi.manpreet.composablememes.platform.filemanager
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import arrow.core.raise.Raise
+import arrow.core.raise.catch
+import arrow.core.raise.ensure
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.get
 import kotlinx.cinterop.refTo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import org.jetbrains.skia.*
 import platform.CoreFoundation.CFDataGetBytePtr
 import platform.CoreFoundation.CFDataGetLength
@@ -16,32 +22,37 @@ import platform.UIKit.UIImageJPEGRepresentation
 
 actual class FileManager {
 
-    actual suspend fun saveImage(bitmap: ImageBitmap, fileName: String) {
-        try {
-            val fileManager = NSFileManager.defaultManager
-            val documentDirectory = (fileManager.URLsForDirectory(
-                NSDocumentDirectory,
-                NSUserDomainMask
-            ).firstOrNull() as? NSURL) ?: return
+    actual suspend fun Raise<String>.saveImage(bitmap: ImageBitmap, fileName: String): String {
+        return withContext(Dispatchers.IO) {
+            catch(
+                catch = { e -> "Failed to save image: ${e.message}" },
+                block = {
+                    val fileManager = NSFileManager.defaultManager
+                    val documentDirectory = (fileManager.URLsForDirectory(
+                        NSDocumentDirectory,
+                        NSUserDomainMask
+                    ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
-            val fileURL = documentDirectory.URLByAppendingPathComponent(fileName)?.also {
-                if (!fileManager.fileExistsAtPath(it.path ?: "")) {
-                    fileManager.createFileAtPath(it.path ?: "", contents = null, attributes = null)
+                    val fileURL = documentDirectory.URLByAppendingPathComponent(fileName)?.also {
+                        if (!fileManager.fileExistsAtPath(it.path ?: "")) {
+                            fileManager.createFileAtPath(it.path ?: "", contents = null, attributes = null)
+                        }
+                    } ?: raise("Failed to create file URL")
+
+                    // Convert ImageBitmap to CGImage first, then to UIImage
+                    val uiImage: UIImage = bitmap.toUIImage() ?: raise("Failed to convert to UIImage")
+                    val jpeg = UIImageJPEGRepresentation(uiImage, 0.85) ?: raise("Failed to create JPEG data")
+                    val path = fileURL.path ?: raise("Failed to get file path")
+                    val imageData = NSData.dataWithData(jpeg)
+
+                    ensure(imageData.writeToFile(path, atomically = true)) { "Failed to write image data to file" }
+                    path
                 }
-            } ?: return
-
-            // Convert ImageBitmap to CGImage first, then to UIImage
-            val uiImage: UIImage = bitmap.toUIImage() ?: return
-            val jpeg = UIImageJPEGRepresentation(uiImage, 0.85) ?: return
-            val path = fileURL.path ?: return
-            val imageData = NSData.dataWithData(jpeg)
-
-            imageData.writeToFile(path, atomically = true)
-        } catch (e: Exception) {
-            println("Failed to save file: ${e.message}")
+            )
         }
     }
 
+    /*
     actual suspend fun loadImage(fileName: String): ImageBitmap? {
         return try {
             val fileManager = NSFileManager.defaultManager
@@ -64,6 +75,82 @@ actual class FileManager {
             null
         }
     }
+
+    @OptIn(ExperimentalForeignApi::class)
+    actual suspend fun loadAllImages(): List<ImageBitmap> {
+        return try {
+            val fileManager = NSFileManager.defaultManager
+            val documentDirectory = (fileManager.URLsForDirectory(
+                NSDocumentDirectory,
+                NSUserDomainMask
+            ).firstOrNull() as? NSURL) ?: return emptyList()
+
+            val files = fileManager.contentsOfDirectoryAtURL(
+                url = documentDirectory,
+                includingPropertiesForKeys = null,
+                options = NSDirectoryEnumerationSkipsHiddenFiles,
+                error = null
+            ) ?: return emptyList()
+
+            files.mapNotNull { fileURL ->
+                val path = (fileURL as? NSURL)?.path ?: return@mapNotNull null
+                val uiImage = UIImage(contentsOfFile = path) ?: return@mapNotNull null
+                uiImage.toImageBitmap()
+
+//                val nsData = NSData.dataWithContentsOfURL(fileURL) ?: return@mapNotNull null
+
+                // Load UIImage from file
+//                val path = fileURL.path ?: return@mapNotNull null
+//                val uiImage = UIImage(contentsOfFile = path)
+
+                // Convert UIImage back to ImageBitmap
+//                uiImage?.toImageBitmap()
+            } ?: emptyList()
+        } catch (e: Exception) {
+            println("Failed to load all files: ${e.message}")
+            emptyList()
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    actual suspend fun platformGetImageReferences(): List<ImageReference> {
+        return try {
+            val fileManager = NSFileManager.defaultManager
+            val documentDirectory = (fileManager.URLsForDirectory(
+                NSDocumentDirectory,
+                NSUserDomainMask
+            ).firstOrNull() as? NSURL) ?: return emptyList()
+
+            val files = fileManager.contentsOfDirectoryAtURL(
+                url = documentDirectory,
+                includingPropertiesForKeys = null,
+                options = NSDirectoryEnumerationSkipsHiddenFiles,
+                error = null
+            ) ?: return emptyList()
+
+            files.mapNotNull { fileURL ->
+                val nsurl = fileURL as? NSURL ?: return@mapNotNull null
+                val fileName = nsurl.lastPathComponent ?: return@mapNotNull null
+                if (fileName.endsWith(".jpg", ignoreCase = true).not()) return@mapNotNull null
+                val path = (fileURL as? NSURL)?.path ?: return@mapNotNull null
+
+                // Get file attributes for size
+                val attributes = fileManager.attributesOfItemAtPath(path, null)
+                val fileSize = (attributes?.get(NSFileSize) as? NSNumber)?.longValue ?: return@mapNotNull null
+
+                ImageReference(
+                    id = path,
+                    path = path,
+                    size = fileSize,
+                )
+            } ?: emptyList()
+        } catch (e: Exception) {
+            println("Failed to get image references: ${e.message}")
+            emptyList()
+        }
+    }
+
+     */
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -89,7 +176,136 @@ fun ImageBitmap.toUIImage(): UIImage? {
     return cgImage?.let { UIImage.imageWithCGImage(it) }
 }
 
+/**
+ * Platform-specific image conversion utilities for iOS/macOS to Skia/Compose Multiplatform.
+ *
+ * Key Platform Details:
+ * - iOS/macOS (Core Graphics) typically stores images in BGRA format when using little-endian
+ *   architecture (which is common on modern devices)
+ * - Skia expects RGBA format for its image data
+ * - This conversion is necessary because:
+ *   1. Core Graphics (CGImage) uses different byte orders depending on platform and settings
+ *   2. Skia expects a consistent RGBA byte order
+ *   3. Memory layout differences between platforms need to be handled
+ */
 
+@OptIn(ExperimentalForeignApi::class)
+private fun UIImage.toSkiaImage(): Image? {
+    // Get the underlying CGImage. If null, we can't proceed
+    val imageRef = this.CGImage ?: return null
+
+    // Get basic image properties
+    val width = CGImageGetWidth(imageRef).toInt()
+    val height = CGImageGetHeight(imageRef).toInt()
+    val bytesPerRow = CGImageGetBytesPerRow(imageRef)
+
+    // Get the raw image data
+    val data = CGDataProviderCopyData(CGImageGetDataProvider(imageRef))
+    val bytePointer = CFDataGetBytePtr(data)
+    val length = CFDataGetLength(data)
+
+    // Validate data length - must be divisible by 4 for RGBA/BGRA format
+    if (length % 4 != 0L) {
+        CFRelease(data)
+        CGImageRelease(imageRef)
+        return null
+    }
+
+    // Determine alpha channel handling based on CGImage alpha info
+    val alphaType = when (CGImageGetAlphaInfo(imageRef)) {
+        // Pre-multiplied alpha: RGB values are multiplied by alpha value
+        CGImageAlphaInfo.kCGImageAlphaPremultipliedFirst,
+        CGImageAlphaInfo.kCGImageAlphaPremultipliedLast -> ColorAlphaType.PREMUL
+
+        // Straight alpha: RGB values are independent of alpha value
+        CGImageAlphaInfo.kCGImageAlphaFirst,
+        CGImageAlphaInfo.kCGImageAlphaLast -> ColorAlphaType.UNPREMUL
+
+        // No alpha channel present
+        CGImageAlphaInfo.kCGImageAlphaNone,
+        CGImageAlphaInfo.kCGImageAlphaNoneSkipFirst,
+        CGImageAlphaInfo.kCGImageAlphaNoneSkipLast -> ColorAlphaType.OPAQUE
+
+        // Unknown or unsupported alpha format
+        else -> ColorAlphaType.UNKNOWN
+    }
+
+    // Get color space information from the CGImage
+    val cgColorSpace = CGImageGetColorSpace(imageRef)
+    val colorSpaceModel = CGColorSpaceGetModel(cgColorSpace)
+    val skiaColorSpace = when (colorSpaceModel) {
+        1 -> ColorSpace.sRGB  // 1 = kCGColorSpaceModelRGB in Core Graphics
+        else -> ColorSpace.sRGB // Default to sRGB for unsupported color spaces
+    }
+    CGColorSpaceRelease(cgColorSpace)
+
+    // Check the bitmap info to determine byte order
+    val bitmapInfo = CGImageGetBitmapInfo(imageRef)
+    val byteOrderInfo = bitmapInfo and kCGBitmapByteOrderMask
+    val shouldSwapRB = when (byteOrderInfo) {
+        kCGBitmapByteOrder32Little -> true  // Little-endian needs swap
+        kCGBitmapByteOrder32Big -> false    // Big-endian doesn't need swap
+        else -> true // Default to swap (most common case on modern devices)
+    }
+
+    // Copy raw bytes to Kotlin ByteArray
+    val sourceArray = ByteArray(length.toInt()) { index ->
+        bytePointer!![index].toByte()
+    }
+
+    // Create a new array for the converted data
+    val convertedArray = ByteArray(length.toInt())
+
+    // Convert color format if needed
+    for (i in sourceArray.indices step 4) {
+        if (shouldSwapRB) {
+            // Swap R and B channels for BGRA to RGBA conversion
+            // This is needed because:
+            // - Core Graphics commonly uses BGRA on little-endian systems
+            // - Skia expects RGBA regardless of platform
+            convertedArray[i] = sourceArray[i + 2]     // R (was B)
+            convertedArray[i + 1] = sourceArray[i + 1] // G (unchanged)
+            convertedArray[i + 2] = sourceArray[i]     // B (was R)
+            convertedArray[i + 3] = sourceArray[i + 3] // A (unchanged)
+        } else {
+            // Direct copy if no swap is needed
+            convertedArray[i] = sourceArray[i]
+            convertedArray[i + 1] = sourceArray[i + 1]
+            convertedArray[i + 2] = sourceArray[i + 2]
+            convertedArray[i + 3] = sourceArray[i + 3]
+        }
+    }
+
+    // Clean up Core Foundation/Core Graphics resources
+    CFRelease(data)
+    CGImageRelease(imageRef)
+
+    // Create and return the Skia Image
+    return Image.makeRaster(
+        imageInfo = ImageInfo(
+            width = width,
+            height = height,
+            colorType = ColorType.RGBA_8888,  // Skia's expected format
+            alphaType = alphaType,
+            colorSpace = skiaColorSpace
+        ),
+        bytes = convertedArray,
+        rowBytes = bytesPerRow.toInt(),
+    )
+}
+
+/**
+ * Converts a UIImage to Compose Multiplatform's ImageBitmap format.
+ * Falls back to a 1x1 pixel ImageBitmap if conversion fails.
+ *
+ * @return ImageBitmap representation of the UIImage
+ */
+fun UIImage.toImageBitmap(): ImageBitmap {
+    val skiaImage = this.toSkiaImage() ?: return ImageBitmap(1, 1)
+    return skiaImage.toComposeImageBitmap()
+}
+
+/*
 @OptIn(ExperimentalForeignApi::class)
 private fun UIImage.toSkiaImage(): Image? {
     val imageRef = this.CGImage ?: return null
@@ -154,3 +370,5 @@ fun UIImage.toImageBitmap(): ImageBitmap {
     val skiaImage = this.toSkiaImage() ?: return ImageBitmap(1, 1)
     return skiaImage.toComposeImageBitmap()
 }
+
+ */

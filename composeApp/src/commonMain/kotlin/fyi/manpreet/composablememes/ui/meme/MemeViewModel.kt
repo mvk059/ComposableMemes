@@ -28,8 +28,6 @@ import fyi.manpreet.composablememes.ui.meme.state.MemeState
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
 import fyi.manpreet.composablememes.ui.meme.state.ShareOption
 import fyi.manpreet.composablememes.util.MemeConstants
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -182,15 +180,7 @@ class MemeViewModel(
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontSize -> onFontSizeChange(event.value)
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontColor -> onFontColorChange(event.id)
 
-            is MemeEvent.SaveEvent.SaveImage -> saveImage(event.imageBitmap, event.size, event.offset)
-            MemeEvent.SaveEvent.ShareImage -> println("Share image")
-        }
-    }
-
-    private fun fetchMeme(id: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val meme = repository.getMemeById(id)
-            _memeState.update { it.copy(meme = meme) }
+            is MemeEvent.SaveEvent.SaveImage -> saveImage(event.imageBitmap, event.size, event.offset, event.type)
         }
     }
 
@@ -315,29 +305,37 @@ class MemeViewModel(
         }
     }
 
-    private fun saveImage(imageBitmap: ImageBitmap, imageSize: Size, imageOffset: Offset) {
-        println(imageBitmap)
+    private fun saveImage(imageBitmap: ImageBitmap, imageSize: Size, imageOffset: Offset, type: ShareOption.ShareType) {
         viewModelScope.launch {
-            cropImage(imageBitmap = imageBitmap, imageSize = imageSize, imageOffset = imageOffset)
+            cropImage(imageBitmap = imageBitmap, imageSize = imageSize, imageOffset = imageOffset, type = type)
         }
     }
 
-    private suspend fun cropImage(imageBitmap: ImageBitmap, imageSize: Size, imageOffset: Offset) {
+    private suspend fun cropImage(
+        imageBitmap: ImageBitmap,
+        imageSize: Size,
+        imageOffset: Offset,
+        type: ShareOption.ShareType
+    ) {
         return either {
             with(fileManager) {
                 this@either.cropImage(imageBitmap, imageOffset, imageSize)
             }
         }.fold(
             ifLeft = { println("Failed to crop image: $it") },
-            ifRight = { bitmap -> saveImage(bitmap) }
+            ifRight = { bitmap -> saveImage(bitmap, type) }
         )
     }
 
-    private suspend fun saveImage(imageBitmap: ImageBitmap) {
+    private suspend fun saveImage(imageBitmap: ImageBitmap, type: ShareOption.ShareType) {
         val meme = _memeState.value.meme
         requireNotNull(meme) { "Meme object cannot be null while saving" }
 
-        val imageName = "${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
+        val imageName = when (type) {
+            ShareOption.ShareType.SAVE -> "${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
+            ShareOption.ShareType.SHARE -> "${MemeConstants.TEMP_FILE_NAME}${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
+        }
+
         either {
             with(fileManager) {
                 this@either.saveImage(imageBitmap, imageName)
@@ -346,10 +344,29 @@ class MemeViewModel(
             ifLeft = { println("Error saving image: $it") },
             ifRight = { path ->
                 println("Image saved successfully: $path")
-                repository.insertMeme(meme.copy(imageName = imageName, path = path))
-                _navigateBackStatus.update { true }
+                when (type) {
+                    ShareOption.ShareType.SAVE -> {
+                        repository.insertMeme(meme.copy(imageName = imageName, path = path))
+                        _navigateBackStatus.update { true }
+                    }
+
+                    ShareOption.ShareType.SHARE -> shareImage(imageName)
+                }
             }
         )
+    }
+
+    private fun shareImage(imageName: String) {
+        viewModelScope.launch {
+            either {
+                with(fileManager) {
+                    this@either.shareImage(imageName)
+                }
+            }.fold(
+                ifLeft = { println("Error sharing image: $it") },
+                ifRight = { println("Image shared successfully") }
+            )
+        }
     }
 
     /**

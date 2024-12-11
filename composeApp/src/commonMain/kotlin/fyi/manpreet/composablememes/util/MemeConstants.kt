@@ -7,4 +7,5 @@ object MemeConstants {
     val MAX_FONT_SIZE = 32.sp.value
     const val DEFAULT_SLIDER_VALUE = 0.5f
     const val NAVIGATE_BACK_RELOAD = "Reload"
+    const val TEMP_FILE_NAME = "temp_"
 }

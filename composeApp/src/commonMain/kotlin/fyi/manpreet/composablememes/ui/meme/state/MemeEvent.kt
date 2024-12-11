@@ -43,7 +43,11 @@ sealed interface MemeEvent {
     }
 
     sealed interface SaveEvent : MemeEvent {
-        data class SaveImage(val imageBitmap: ImageBitmap, val offset: Offset, val size: Size) : SaveEvent
-        data object ShareImage : SaveEvent
+        data class SaveImage(
+            val imageBitmap: ImageBitmap,
+            val offset: Offset,
+            val size: Size,
+            val type: ShareOption.ShareType
+        ) : SaveEvent
     }
 }

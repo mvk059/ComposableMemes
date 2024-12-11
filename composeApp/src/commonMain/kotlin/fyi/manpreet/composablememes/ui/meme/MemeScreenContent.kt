@@ -4,7 +4,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -20,7 +25,11 @@ import fyi.manpreet.composablememes.ui.meme.components.bottombar.MemeBottomBarEd
 import fyi.manpreet.composablememes.ui.meme.components.dialog.BackConfirmationDialog
 import fyi.manpreet.composablememes.ui.meme.components.meme.MemeImage
 import fyi.manpreet.composablememes.ui.meme.components.topbar.MemeTopBar
-import fyi.manpreet.composablememes.ui.meme.state.*
+import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
+import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
+import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
+import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
+import fyi.manpreet.composablememes.ui.meme.state.ShareOption
 import kotlinx.coroutines.launch
 
 @Composable
@@ -46,9 +55,7 @@ fun MemeScreenContent(
     onFontSizeChangeBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontColorSelectBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onSaveImageBottomSheet: (MemeEvent.SaveEvent) -> Unit,
-    onShareImageBottomSheet: (MemeEvent.SaveEvent) -> Unit,
-
-    ) {
+) {
 
     if (meme == null) return
 
@@ -122,20 +129,17 @@ fun MemeScreenContent(
         state = shareSheetState,
         shareOptions = shareOptions,
         onShareClick = { type ->
-            shareSheetState.currentDetent = Hidden
-            when(type) {
-                ShareOption.ShareType.SAVE ->
-                    scope.launch {
-                        onSaveImageBottomSheet(
-                            MemeEvent.SaveEvent.SaveImage(
-                                imageBitmap = graphicsLayer.toImageBitmap(),
-                                offset = imageContentOffset,
-                                size = imageContentSize,
-                            )
-                        )
-                    }
-                ShareOption.ShareType.SHARE -> onShareImageBottomSheet(MemeEvent.SaveEvent.ShareImage)
+            scope.launch {
+                onSaveImageBottomSheet(
+                    MemeEvent.SaveEvent.SaveImage(
+                        imageBitmap = graphicsLayer.toImageBitmap(),
+                        offset = imageContentOffset,
+                        size = imageContentSize,
+                        type = type,
+                    )
+                )
             }
+            shareSheetState.currentDetent = Hidden
         },
     )
 }

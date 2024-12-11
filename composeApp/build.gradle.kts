@@ -54,6 +54,7 @@ kotlin {
             implementation(libs.compose.navigation)
             implementation(libs.compose.lifecycle.runtime)
             implementation(libs.compose.lifecycle.viewmodel)
+            implementation(libs.material.icons)
 
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization)

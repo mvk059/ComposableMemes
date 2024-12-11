@@ -27,6 +27,7 @@ multiplatformSettings = "1.2.0"
 composables-core = "1.20.0"
 skiko = "0.8.18"
 coil = "3.0.4"
+material-icon = "1.7.1"
 arrow-bom = "1.2.4"
 
 androidx-activityCompose = "1.9.3"
@@ -88,6 +89,7 @@ androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", versi
 composables-core = { module = "com.composables:core", version.ref = "composables-core" }
 skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+material-icons = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icon" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

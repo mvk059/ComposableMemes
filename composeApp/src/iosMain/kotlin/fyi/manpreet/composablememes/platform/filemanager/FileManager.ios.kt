@@ -7,18 +7,50 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import arrow.core.raise.Raise
 import arrow.core.raise.catch
 import arrow.core.raise.ensure
+import fyi.manpreet.composablememes.util.MemeConstants
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.get
 import kotlinx.cinterop.refTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import org.jetbrains.skia.*
+import org.jetbrains.skia.ColorAlphaType
+import org.jetbrains.skia.ColorSpace
+import org.jetbrains.skia.ColorType
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
 import platform.CoreFoundation.CFDataGetBytePtr
 import platform.CoreFoundation.CFDataGetLength
 import platform.CoreFoundation.CFRelease
-import platform.CoreGraphics.*
-import platform.Foundation.*
+import platform.CoreGraphics.CGBitmapContextCreate
+import platform.CoreGraphics.CGBitmapContextCreateImage
+import platform.CoreGraphics.CGColorSpaceCreateDeviceRGB
+import platform.CoreGraphics.CGColorSpaceGetModel
+import platform.CoreGraphics.CGColorSpaceRelease
+import platform.CoreGraphics.CGDataProviderCopyData
+import platform.CoreGraphics.CGImageAlphaInfo
+import platform.CoreGraphics.CGImageCreateWithImageInRect
+import platform.CoreGraphics.CGImageGetAlphaInfo
+import platform.CoreGraphics.CGImageGetBitmapInfo
+import platform.CoreGraphics.CGImageGetBytesPerRow
+import platform.CoreGraphics.CGImageGetColorSpace
+import platform.CoreGraphics.CGImageGetDataProvider
+import platform.CoreGraphics.CGImageGetHeight
+import platform.CoreGraphics.CGImageGetWidth
+import platform.CoreGraphics.CGImageRelease
+import platform.CoreGraphics.CGRectMake
+import platform.CoreGraphics.kCGBitmapByteOrder32Big
+import platform.CoreGraphics.kCGBitmapByteOrder32Little
+import platform.CoreGraphics.kCGBitmapByteOrderMask
+import platform.Foundation.NSData
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
+import platform.Foundation.dataWithData
+import platform.Foundation.writeToFile
+import platform.UIKit.UIActivityViewController
+import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 
@@ -75,6 +107,42 @@ actual class FileManager {
     }
 
     @OptIn(ExperimentalForeignApi::class)
+    actual suspend fun Raise<String>.deleteTemporaryImage() {
+        withContext(Dispatchers.Default) {
+            catch(
+                catch = { e ->
+                    throw Exception("Failed to delete temporary images: ${e.message}", e)
+                },
+                block = {
+                    val fileManager = NSFileManager.defaultManager
+                    val documentDirectory = (fileManager.URLsForDirectory(
+                        NSDocumentDirectory,
+                        NSUserDomainMask
+                    ).firstOrNull() as? NSURL)?.path ?: raise("Failed to get document directory")
+
+                    val contents = fileManager.contentsOfDirectoryAtPath(documentDirectory, null)
+                        ?.filterIsInstance<String>() ?: raise("Failed to get directory contents")
+
+                    val tempFiles = contents.filter { fileName ->
+                        fileName.startsWith(MemeConstants.TEMP_FILE_NAME)
+                    }
+
+                    if (tempFiles.isEmpty()) {
+                        return@catch
+                    }
+
+                    val failedDeletions = tempFiles.mapNotNull { fileName ->
+                        val fullPath = "$documentDirectory/$fileName"
+                        if (!fileManager.removeItemAtPath(fullPath, null)) fullPath else null
+                    }
+
+                    ensure(failedDeletions.isEmpty()) { "Failed to delete temporary files: ${failedDeletions.joinToString()}" }
+                }
+            )
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
     actual suspend fun Raise<String>.cropImage(imageBitmap: ImageBitmap, offset: Offset, size: Size): ImageBitmap {
         return withContext(Dispatchers.IO) {
 
@@ -101,105 +169,45 @@ actual class FileManager {
         }
     }
 
-    /*
-    actual suspend fun loadImage(fileName: String): ImageBitmap? {
-        return try {
-            val fileManager = NSFileManager.defaultManager
-            val documentDirectory = (fileManager.URLsForDirectory(
-                NSDocumentDirectory,
-                NSUserDomainMask
-            ).firstOrNull() as? NSURL) ?: return null
+    actual suspend fun Raise<String>.shareImage(imageName: String) {
 
-            val fileURL = documentDirectory.URLByAppendingPathComponent(fileName) ?: return null
-            val nsData = NSData.dataWithContentsOfURL(fileURL) ?: return null
+        catch(
+            catch = { e -> throw Exception("Failed to share image: ${e.message}") },
+            block = {
+                val filePath = withContext(Dispatchers.IO) {
+                    val fileManager = NSFileManager.defaultManager
+                    val documentDirectory = (fileManager.URLsForDirectory(
+                        NSDocumentDirectory,
+                        NSUserDomainMask
+                    ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
-            // Load UIImage from file
-            val path = fileURL.path ?: return null
-            val uiImage = UIImage(contentsOfFile = path)
+                    val fileURL =
+                        documentDirectory.URLByAppendingPathComponent(imageName) ?: raise("Failed to get file URL")
+                    val filePath = fileURL.path ?: raise("Failed to get file path")
 
-            // Convert UIImage back to ImageBitmap
-            return uiImage.toImageBitmap()
-        } catch (e: Exception) {
-            println("Failed to load file: ${e.message}")
-            null
-        }
+                    filePath
+                }
+                // Switch to Main dispatcher for UI operations
+                withContext(Dispatchers.Main) {
+                    val image = UIImage.imageWithContentsOfFile(filePath) ?: raise("Failed to load image")
+
+                    val activityItems = mutableListOf<Any>(image)
+                    val activityViewController = UIActivityViewController(
+                        activityItems = activityItems,
+                        applicationActivities = null
+                    )
+
+                    val rootViewController = UIApplication.sharedApplication.keyWindow?.rootViewController
+                    rootViewController?.presentViewController(
+                        viewControllerToPresent = activityViewController,
+                        animated = true,
+                        completion = {}
+                    )
+                }
+            }
+        )
     }
 
-    @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun loadAllImages(): List<ImageBitmap> {
-        return try {
-            val fileManager = NSFileManager.defaultManager
-            val documentDirectory = (fileManager.URLsForDirectory(
-                NSDocumentDirectory,
-                NSUserDomainMask
-            ).firstOrNull() as? NSURL) ?: return emptyList()
-
-            val files = fileManager.contentsOfDirectoryAtURL(
-                url = documentDirectory,
-                includingPropertiesForKeys = null,
-                options = NSDirectoryEnumerationSkipsHiddenFiles,
-                error = null
-            ) ?: return emptyList()
-
-            files.mapNotNull { fileURL ->
-                val path = (fileURL as? NSURL)?.path ?: return@mapNotNull null
-                val uiImage = UIImage(contentsOfFile = path) ?: return@mapNotNull null
-                uiImage.toImageBitmap()
-
-//                val nsData = NSData.dataWithContentsOfURL(fileURL) ?: return@mapNotNull null
-
-                // Load UIImage from file
-//                val path = fileURL.path ?: return@mapNotNull null
-//                val uiImage = UIImage(contentsOfFile = path)
-
-                // Convert UIImage back to ImageBitmap
-//                uiImage?.toImageBitmap()
-            } ?: emptyList()
-        } catch (e: Exception) {
-            println("Failed to load all files: ${e.message}")
-            emptyList()
-        }
-    }
-
-    @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun platformGetImageReferences(): List<ImageReference> {
-        return try {
-            val fileManager = NSFileManager.defaultManager
-            val documentDirectory = (fileManager.URLsForDirectory(
-                NSDocumentDirectory,
-                NSUserDomainMask
-            ).firstOrNull() as? NSURL) ?: return emptyList()
-
-            val files = fileManager.contentsOfDirectoryAtURL(
-                url = documentDirectory,
-                includingPropertiesForKeys = null,
-                options = NSDirectoryEnumerationSkipsHiddenFiles,
-                error = null
-            ) ?: return emptyList()
-
-            files.mapNotNull { fileURL ->
-                val nsurl = fileURL as? NSURL ?: return@mapNotNull null
-                val fileName = nsurl.lastPathComponent ?: return@mapNotNull null
-                if (fileName.endsWith(".jpg", ignoreCase = true).not()) return@mapNotNull null
-                val path = (fileURL as? NSURL)?.path ?: return@mapNotNull null
-
-                // Get file attributes for size
-                val attributes = fileManager.attributesOfItemAtPath(path, null)
-                val fileSize = (attributes?.get(NSFileSize) as? NSNumber)?.longValue ?: return@mapNotNull null
-
-                ImageReference(
-                    id = path,
-                    path = path,
-                    size = fileSize,
-                )
-            } ?: emptyList()
-        } catch (e: Exception) {
-            println("Failed to get image references: ${e.message}")
-            emptyList()
-        }
-    }
-
-     */
 }
 
 @OptIn(ExperimentalForeignApi::class)

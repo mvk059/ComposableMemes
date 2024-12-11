@@ -1,16 +1,19 @@
 package fyi.manpreet.composablememes.platform.filemanager
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.content.FileProvider
 import arrow.core.raise.Raise
 import arrow.core.raise.catch
 import arrow.core.raise.ensure
 import fyi.manpreet.composablememes.usecase.MainActivityUseCase
+import fyi.manpreet.composablememes.util.MemeConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -56,6 +59,35 @@ actual class FileManager(
         }
     }
 
+    actual suspend fun Raise<String>.deleteTemporaryImage() {
+        withContext(Dispatchers.IO) {
+
+            catch(
+                catch = { e -> throw Exception("Failed to delete image: ${e.message}") },
+                block = {
+                    val activity = mainActivityUseCase.requireActivity()
+                    val tempFiles = activity.filesDir
+                        .walk()
+                        .filter { file ->
+                            file.isFile && file.name.startsWith(MemeConstants.TEMP_FILE_NAME)
+                        }
+                        .toList()
+
+                    if (tempFiles.isEmpty()) {
+                        return@catch
+                    }
+
+                    val failedDeletions = tempFiles.mapNotNull { file ->
+                        if (!file.delete()) file.absolutePath
+                        else null
+                    }
+
+                    ensure(failedDeletions.isEmpty()) { "Failed to delete some temporary files: ${failedDeletions.joinToString()}" }
+                }
+            )
+        }
+    }
+
     actual suspend fun Raise<String>.cropImage(imageBitmap: ImageBitmap, offset: Offset, size: Size): ImageBitmap {
         return withContext(Dispatchers.IO) {
 
@@ -76,56 +108,33 @@ actual class FileManager(
         }
     }
 
-    /*
-        actual suspend fun loadImage(fileName: String): ImageBitmap? {
-            return withContext(Dispatchers.IO) {
-                try {
-                    mainActivityUseCase.requireActivity().openFileInput(fileName).use { inputStream ->
-                        val androidBitmap = BitmapFactory.decodeStream(inputStream)
-                        androidBitmap.asImageBitmap()
+    actual suspend fun Raise<String>.shareImage(imageName: String) {
+        withContext(Dispatchers.IO) {
+            val activity = mainActivityUseCase.requireActivity()
+
+            catch(
+                catch = { e -> throw Exception("Failed to share image: ${e.message}") },
+                block = {
+                    val imageFile = File(activity.filesDir, imageName)
+                    ensure(imageFile.exists()) { "Image file not found at path: $imageName" }
+
+                    val contentUri = FileProvider.getUriForFile(
+                        /* context = */ activity,
+                        /* authority = */ "${activity.packageName}.fileprovider",
+                        /* file = */ imageFile
+                    )
+
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "image/jpeg"
+                        putExtra(Intent.EXTRA_STREAM, contentUri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                } catch (e: Exception) {
-                    println("Failed to read image: ${e.message}")
-                    null
+
+                    val chooserIntent = Intent.createChooser(shareIntent, "Share Image")
+                    chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    activity.startActivity(chooserIntent)
                 }
-            }
+            )
         }
-
-        actual suspend fun loadAllImages(): List<ImageBitmap> {
-            return withContext(Dispatchers.IO) {
-                val files = mainActivityUseCase.requireActivity().filesDir.listFiles()
-                files?.mapNotNull { file ->
-                    try {
-                        mainActivityUseCase.requireActivity().openFileInput(file.name).use { inputStream ->
-                            val androidBitmap = BitmapFactory.decodeStream(inputStream)
-                            androidBitmap.asImageBitmap()
-                        }
-                    } catch (e: Exception) {
-                        println("Failed to read image: ${e.message}")
-                        null
-                    }
-                } ?: emptyList()
-            }
-        }
-
-        actual suspend fun platformGetImageReferences(): List<ImageReference> {
-             return withContext(Dispatchers.IO) {
-                val files = mainActivityUseCase.requireActivity().filesDir.listFiles()
-                 files?.mapNotNull { file ->
-                     if (file.name.endsWith(".jpg").not()) return@mapNotNull null
-
-                     try {
-                         ImageReference(
-                             id = file.name,
-                             path = file.path,
-                         )
-                     } catch (e: Exception) {
-                         println("Failed to read image: ${e.message}")
-                         null
-                     }
-                 } ?: emptyList()
-            }
-        }
-
-     */
+    }
 }

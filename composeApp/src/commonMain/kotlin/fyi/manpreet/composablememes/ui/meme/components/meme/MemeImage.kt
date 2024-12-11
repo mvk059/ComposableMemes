@@ -22,7 +22,6 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -32,7 +31,6 @@ import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
@@ -96,23 +94,18 @@ fun MemeImage(
     meme: Meme,
     textBoxes: List<MemeTextBox>,
     graphicsLayer: GraphicsLayer,
+    imageContentSize: Size,
+    imageContentOffset: Offset,
     onPositionUpdate: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxClick: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClick: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxTextChange: (MemeEvent.EditorEvent) -> Unit,
     onDeselectClick: (MemeEvent.EditorEvent) -> Unit,
+    onImageSizeUpdate: (Size, Offset) -> Unit,
 ) {
 
     val image: DrawableResource = Res.allDrawableResources[meme.imageName] ?: return
-    var imageContentSize by remember { mutableStateOf(Size.Zero) }
-    var imageContentOffset by remember { mutableStateOf(Offset.Zero) }
-    var rect by remember { mutableStateOf(Rect.Zero) }
-
     val painter = painterResource(image)
-    val imageWidth = painter.intrinsicSize.width
-    val imageHeight = painter.intrinsicSize.height
-
-    var composableView by remember { mutableStateOf<Any?>(null) }
 
     Box(
         modifier = modifier
@@ -128,7 +121,6 @@ fun MemeImage(
             }
     ) {
 
-
         Box {
             Image(
                 modifier = Modifier
@@ -140,6 +132,8 @@ fun MemeImage(
                         val actualHeight: Float
                         val offsetX: Float
                         val offsetY: Float
+                        val imageWidth = painter.intrinsicSize.width
+                        val imageHeight = painter.intrinsicSize.height
 
                         //  // Calculate aspect ratios
                         val imageAspectRatio = imageWidth / imageHeight
@@ -159,16 +153,9 @@ fun MemeImage(
                             offsetY = 0f
                         }
 
-                        imageContentSize = Size(actualWidth, actualHeight)
-                        imageContentOffset = Offset(offsetX, offsetY)
-                        composableView = coordinates.findRootCoordinates()
-                        rect = Rect(
-                            imageContentOffset.x,
-                            imageContentSize.width,
-                            imageContentOffset.y,
-                            imageContentSize.height
-                        )
-                        println(composableView)
+                        val imageSize = Size(actualWidth, actualHeight)
+                        val imageOffset = Offset(offsetX, offsetY)
+                        onImageSizeUpdate(imageSize, imageOffset)
                     },
                 painter = painter,
                 contentDescription = null,

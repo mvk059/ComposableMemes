@@ -1,6 +1,7 @@
 package fyi.manpreet.composablememes.ui.meme.state
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 
 sealed interface MemeEvent {
@@ -25,7 +26,7 @@ sealed interface MemeEvent {
 
         data object DeselectAllTextBox : EditorEvent
         data class PositionUpdate(val id: Long, val offset: Offset) : EditorEvent
-        data class SaveImage(val imageBitmap: ImageBitmap) : EditorEvent
+        data class SaveImage(val imageBitmap: ImageBitmap, val offset: Offset, val size: Size) : EditorEvent
     }
 
     sealed interface EditorOptionsBottomBarEvent : MemeEvent {

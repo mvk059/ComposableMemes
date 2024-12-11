@@ -1,6 +1,7 @@
 package fyi.manpreet.composablememes.ui.meme
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.TextStyle
@@ -25,8 +26,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlin.random.Random
 
 class MemeViewModel(
@@ -150,7 +149,7 @@ class MemeViewModel(
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
-            is MemeEvent.EditorEvent.SaveImage -> saveImage(event.imageBitmap)
+            is MemeEvent.EditorEvent.SaveImage -> saveImage(event.imageBitmap, event.size, event.offset)
 
             is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
@@ -191,7 +190,7 @@ class MemeViewModel(
         val newTextBox = MemeTextBox(
             id = id,
             text = text,
-            offset = Offset.Zero,
+            offset = Offset(0f, 300f),
             isSelected = true,
             isEditable = true,
             textStyle = TextStyle(
@@ -292,28 +291,37 @@ class MemeViewModel(
         }
     }
 
-    private fun saveImage(imageBitmap: ImageBitmap) {
+    private fun saveImage(imageBitmap: ImageBitmap, imageSize: Size, imageOffset: Offset) {
         println(imageBitmap)
         viewModelScope.launch {
-            val meme = _memeState.value.meme
-            requireNotNull(meme) { "Meme object cannot be null while saving" }
-
-            val imageName = "${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
-            saveImage(imageName, imageBitmap)
+            cropImage(imageBitmap = imageBitmap, imageSize = imageSize, imageOffset = imageOffset)
         }
     }
 
-    private suspend fun saveImage(imageName: String, imageBitmap: ImageBitmap) {
+    private suspend fun cropImage(imageBitmap: ImageBitmap, imageSize: Size, imageOffset: Offset) {
+        return either {
+            with(fileManager) {
+                this@either.cropImage(imageBitmap, imageOffset, imageSize)
+            }
+        }.fold(
+            ifLeft = { println("Failed to crop image: $it") },
+            ifRight = { bitmap -> saveImage(bitmap) }
+        )
+    }
+
+    private suspend fun saveImage(imageBitmap: ImageBitmap) {
+        val meme = _memeState.value.meme
+        requireNotNull(meme) { "Meme object cannot be null while saving" }
+
+        val imageName = "${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
         either {
-            // The `this` inside either block is now Raise<String>
-            with(fileManager) { this@either.saveImage(imageBitmap, imageName) }
+            with(fileManager) {
+                this@either.saveImage(imageBitmap, imageName)
+            }
         }.fold(
             ifLeft = { println("Error saving image: $it") },
             ifRight = { path ->
                 println("Image saved successfully: $path")
-                val meme = _memeState.value.meme
-                requireNotNull(meme) { "Meme object cannot be null while saving" }
-
                 repository.insertMeme(meme.copy(imageName = imageName, path = path))
                 _navigateBackStatus.update { true }
             }

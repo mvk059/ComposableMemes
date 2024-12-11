@@ -4,10 +4,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.meme.components.bottombar.MemeBottomBar
@@ -49,6 +50,8 @@ fun MemeScreenContent(
 
     val scope = rememberCoroutineScope()
     val graphicsLayer = rememberGraphicsLayer()
+    var imageContentSize by remember { mutableStateOf(Size.Zero) }
+    var imageContentOffset by remember { mutableStateOf(Offset.Zero) }
 
     Scaffold(
         topBar = {
@@ -70,11 +73,17 @@ fun MemeScreenContent(
                 meme = meme,
                 textBoxes = textBoxes,
                 graphicsLayer = graphicsLayer,
+                imageContentSize = imageContentSize,
+                imageContentOffset = imageContentOffset,
                 onPositionUpdate = onPositionUpdateEditor,
                 onTextBoxClick = onTextBoxClickEditor,
                 onTextBoxCloseClick = onTextBoxCloseClickEditor,
                 onTextBoxTextChange = onTextBoxTextChangeEditor,
                 onDeselectClick = onDeselectClickEditor,
+                onImageSizeUpdate = { size, offset ->
+                    imageContentSize = size
+                    imageContentOffset = offset
+                },
             )
 
             if (shouldShowEditOptions) {
@@ -93,7 +102,13 @@ fun MemeScreenContent(
                     onAddText = onAddTextBottomBar,
                     onSaveImage = {
                         scope.launch {
-                            onSaveImageBottomBar(MemeEvent.EditorEvent.SaveImage(graphicsLayer.toImageBitmap()))
+                            onSaveImageBottomBar(
+                                MemeEvent.EditorEvent.SaveImage(
+                                    imageBitmap = graphicsLayer.toImageBitmap(),
+                                    offset = imageContentOffset,
+                                    size = imageContentSize,
+                                )
+                            )
                         }
                     },
                 )

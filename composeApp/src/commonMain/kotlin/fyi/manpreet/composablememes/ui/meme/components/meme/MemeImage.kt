@@ -295,7 +295,7 @@ private fun Content(
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Done
+                imeAction = ImeAction.Default
             ),
             keyboardActions = KeyboardActions(
                 onDone = {

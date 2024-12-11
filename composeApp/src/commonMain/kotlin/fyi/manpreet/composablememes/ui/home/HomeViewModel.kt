@@ -79,6 +79,7 @@ class HomeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val selectedMemes = repository.getMemesSortedByFavorites()
             _homeState.update { it.copy(memes = selectedMemes) }
+            deleteTemporaryImages()
         }
     }
 
@@ -201,6 +202,18 @@ class HomeViewModel(
                 }
             )
         }
+    }
 
+    private fun deleteTemporaryImages() {
+        viewModelScope.launch {
+            either {
+                with(fileManager) {
+                    this@either.deleteTemporaryImage()
+                }
+            }.fold(
+                ifLeft = { println("Error deleting temporary images: $it") },
+                ifRight = { println("Temporary images deleted successfully") }
+            )
+        }
     }
 }

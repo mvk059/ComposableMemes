@@ -72,6 +72,10 @@ kotlin {
             implementation(libs.kermit)
             implementation(libs.composables.core)
             implementation(libs.skiko)
+            implementation(libs.coil)
+
+            implementation(project.dependencies.platform(libs.arrow.bom))
+            implementation(libs.arrow.core)
         }
     }
 }

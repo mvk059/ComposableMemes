@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- For files in app's private directory -->
+    <files-path
+            name="my_images"
+            path="/"/>
+</paths>

@@ -99,7 +99,7 @@ fun MemeBottomBarEditOptions(
                         Icon(
                             painterResource(resource = option.icon),
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onTertiary,
+                            tint = Color.Unspecified,
                         )
                     }
                 }

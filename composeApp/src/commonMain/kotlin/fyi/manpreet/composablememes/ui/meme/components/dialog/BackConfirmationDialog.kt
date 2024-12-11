@@ -19,10 +19,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.composables.core.Dialog
-import com.composables.core.DialogPanel
-import com.composables.core.Scrim
-import com.composables.core.rememberDialogState
+import com.composables.core.*
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.common_cancel
 import composablememes.composeapp.generated.resources.common_leave
@@ -44,7 +41,13 @@ fun BackConfirmationDialog(
 
     Box {
 
-        Dialog(state = dialogState) {
+        Dialog(
+            state = dialogState,
+            properties = DialogProperties(
+                dismissOnClickOutside = false,
+                dismissOnBackPress = false,
+            )
+        ) {
             Scrim()
             DialogPanel(
                 modifier = modifier

@@ -10,16 +10,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import com.composables.core.SheetDetent
+import com.composables.core.SheetDetent.Companion.Hidden
+import com.composables.core.rememberModalBottomSheetState
 import fyi.manpreet.composablememes.data.model.Meme
+import fyi.manpreet.composablememes.ui.home.components.bottomsheet.MemeShareBottomSheet
 import fyi.manpreet.composablememes.ui.meme.components.bottombar.MemeBottomBar
 import fyi.manpreet.composablememes.ui.meme.components.bottombar.MemeBottomBarEditOptions
 import fyi.manpreet.composablememes.ui.meme.components.dialog.BackConfirmationDialog
 import fyi.manpreet.composablememes.ui.meme.components.meme.MemeImage
 import fyi.manpreet.composablememes.ui.meme.components.topbar.MemeTopBar
-import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
-import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
-import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
-import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
+import fyi.manpreet.composablememes.ui.meme.state.*
 import kotlinx.coroutines.launch
 
 @Composable
@@ -30,11 +31,11 @@ fun MemeScreenContent(
     editorSelectionOptionsBottomBar: MemeEditorSelectionOptions,
     isBackDialogVisible: Boolean,
     shouldShowEditOptions: Boolean,
+    shareOptions: List<ShareOption>,
     onBackConfirmClickTopBar: (MemeEvent.TopBarEvent) -> Unit,
     onCancelClickDialog: (MemeEvent.TopBarEvent) -> Unit,
     onBackClickDialog: (MemeEvent.TopBarEvent) -> Unit,
     onAddTextBottomBar: (MemeEvent.EditorEvent) -> Unit,
-    onSaveImageBottomBar: (MemeEvent.EditorEvent) -> Unit,
     onPositionUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClickEditor: (MemeEvent.EditorEvent) -> Unit,
@@ -44,12 +45,16 @@ fun MemeScreenContent(
     onFontItemSelectBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontSizeChangeBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontColorSelectBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
-) {
+    onSaveImageBottomSheet: (MemeEvent.SaveEvent) -> Unit,
+    onShareImageBottomSheet: (MemeEvent.SaveEvent) -> Unit,
+
+    ) {
 
     if (meme == null) return
 
     val scope = rememberCoroutineScope()
     val graphicsLayer = rememberGraphicsLayer()
+    val shareSheetState = rememberModalBottomSheetState(initialDetent = Hidden)
     var imageContentSize by remember { mutableStateOf(Size.Zero) }
     var imageContentOffset by remember { mutableStateOf(Offset.Zero) }
 
@@ -100,17 +105,7 @@ fun MemeScreenContent(
                 MemeBottomBar(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     onAddText = onAddTextBottomBar,
-                    onSaveImage = {
-                        scope.launch {
-                            onSaveImageBottomBar(
-                                MemeEvent.EditorEvent.SaveImage(
-                                    imageBitmap = graphicsLayer.toImageBitmap(),
-                                    offset = imageContentOffset,
-                                    size = imageContentSize,
-                                )
-                            )
-                        }
-                    },
+                    onSaveImage = { shareSheetState.currentDetent = SheetDetent.FullyExpanded },
                 )
             }
         }
@@ -122,4 +117,25 @@ fun MemeScreenContent(
             )
         }
     }
+
+    MemeShareBottomSheet(
+        state = shareSheetState,
+        shareOptions = shareOptions,
+        onShareClick = { type ->
+            shareSheetState.currentDetent = Hidden
+            when(type) {
+                ShareOption.ShareType.SAVE ->
+                    scope.launch {
+                        onSaveImageBottomSheet(
+                            MemeEvent.SaveEvent.SaveImage(
+                                imageBitmap = graphicsLayer.toImageBitmap(),
+                                offset = imageContentOffset,
+                                size = imageContentSize,
+                            )
+                        )
+                    }
+                ShareOption.ShareType.SHARE -> onShareImageBottomSheet(MemeEvent.SaveEvent.ShareImage)
+            }
+        },
+    )
 }

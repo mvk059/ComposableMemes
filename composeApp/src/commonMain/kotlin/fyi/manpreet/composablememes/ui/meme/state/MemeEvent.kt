@@ -26,7 +26,6 @@ sealed interface MemeEvent {
 
         data object DeselectAllTextBox : EditorEvent
         data class PositionUpdate(val id: Long, val offset: Offset) : EditorEvent
-        data class SaveImage(val imageBitmap: ImageBitmap, val offset: Offset, val size: Size) : EditorEvent
     }
 
     sealed interface EditorOptionsBottomBarEvent : MemeEvent {
@@ -41,5 +40,10 @@ sealed interface MemeEvent {
         data class Font(val id: FontFamilyType) : EditorSelectionOptionsBottomBarEvent
         data class FontSize(val value: Float) : EditorSelectionOptionsBottomBarEvent
         data class FontColor(val id: Long) : EditorSelectionOptionsBottomBarEvent
+    }
+
+    sealed interface SaveEvent : MemeEvent {
+        data class SaveImage(val imageBitmap: ImageBitmap, val offset: Offset, val size: Size) : SaveEvent
+        data object ShareImage : SaveEvent
     }
 }

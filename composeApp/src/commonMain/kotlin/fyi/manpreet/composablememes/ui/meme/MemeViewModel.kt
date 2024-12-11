@@ -1,5 +1,8 @@
 package fyi.manpreet.composablememes.ui.meme
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.SimCardDownload
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -17,7 +20,13 @@ import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.platform.filemanager.FileManager
 import fyi.manpreet.composablememes.ui.meme.mapper.SliderValue
 import fyi.manpreet.composablememes.ui.meme.mapper.sliderValueToFontSize
-import fyi.manpreet.composablememes.ui.meme.state.*
+import fyi.manpreet.composablememes.ui.meme.state.FontFamilyType
+import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
+import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
+import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
+import fyi.manpreet.composablememes.ui.meme.state.MemeState
+import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
+import fyi.manpreet.composablememes.ui.meme.state.ShareOption
 import fyi.manpreet.composablememes.util.MemeConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -26,7 +35,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlin.random.Random
 
 class MemeViewModel(
     private val repository: MemeRepository,
@@ -130,6 +138,20 @@ class MemeViewModel(
                         ),
                     )
                 ),
+                shareOptions = listOf(
+                    ShareOption(
+                        title = "Save to device",
+                        subtitle = "Save created meme in the Files of your device",
+                        icon = Icons.Outlined.SimCardDownload,
+                        type = ShareOption.ShareType.SAVE,
+                    ),
+                    ShareOption(
+                        title = "Share the meme",
+                        subtitle = "Share your meme or open it in the other App",
+                        icon = Icons.Filled.Share,
+                        type = ShareOption.ShareType.SHARE,
+                    )
+                ),
                 shouldShowEditOptions = false
             )
         }
@@ -149,7 +171,6 @@ class MemeViewModel(
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
-            is MemeEvent.EditorEvent.SaveImage -> saveImage(event.imageBitmap, event.size, event.offset)
 
             is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
@@ -160,6 +181,9 @@ class MemeViewModel(
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.Font -> onFontItemSelection(event.id)
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontSize -> onFontSizeChange(event.value)
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontColor -> onFontColorChange(event.id)
+
+            is MemeEvent.SaveEvent.SaveImage -> saveImage(event.imageBitmap, event.size, event.offset)
+            MemeEvent.SaveEvent.ShareImage -> println("Share image")
         }
     }
 
@@ -185,12 +209,12 @@ class MemeViewModel(
     private fun addTextBox() {
         unselectAllTextBox()
         val id = Clock.System.now().epochSeconds
-        val text = "TAP TWICE TO EDIT ${Random.nextInt(0, 10)}"
+        val text = "TAP TWICE TO EDIT"
         val fontSize = MemeConstants.DEFAULT_SLIDER_VALUE
         val newTextBox = MemeTextBox(
             id = id,
             text = text,
-            offset = Offset(0f, 300f),
+            offset = Offset.Zero,
             isSelected = true,
             isEditable = true,
             textStyle = TextStyle(

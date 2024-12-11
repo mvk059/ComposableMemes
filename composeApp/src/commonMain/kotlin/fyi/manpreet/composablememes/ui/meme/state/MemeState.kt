@@ -17,6 +17,7 @@ data class MemeState(
         fontSize = 0.5f,
         fontColors = emptyList()
     ),
+    val shareOptions: List<ShareOption> = emptyList(),
     val isBackDialogVisible: Boolean = false,
     val shouldShowEditOptions: Boolean = false,
 )

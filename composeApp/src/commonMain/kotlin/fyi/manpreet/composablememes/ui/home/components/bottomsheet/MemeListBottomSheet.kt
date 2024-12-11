@@ -129,6 +129,7 @@ private fun ColumnScope.ListContent(
                     onMemeSelected(HomeEvent.BottomSheetEvent.OnMemeSelect(meme))
                 },
                 meme = meme,
+                isBottomSheetList = true,
             )
         }
 

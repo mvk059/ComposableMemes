@@ -19,6 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.allDrawableResources
 import fyi.manpreet.composablememes.data.model.Meme
@@ -36,6 +40,7 @@ fun MemeItem(
     meme: Meme,
     shouldShowFavorite: Boolean = false,
     shouldShowSelection: Boolean = false,
+    isBottomSheetList: Boolean = false,
     onFavoriteClick: (HomeEvent.MemeListEvent) -> Unit = {},
     onSelectClick: (HomeEvent.MemeListEvent) -> Unit = {},
 ) {
@@ -49,13 +54,24 @@ fun MemeItem(
             .padding(MaterialTheme.spacing.small)
     ) {
 
-        Image(
-            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(MaterialTheme.spacing.small)),
-            painter = painterResource(Res.allDrawableResources[meme.imageName]!!),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds
-        )
-
+        if (isBottomSheetList) {
+            Image(
+                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(MaterialTheme.spacing.small)),
+                painter = painterResource(Res.allDrawableResources[meme.path]!!),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds
+            )
+        } else {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(meme.path)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(MaterialTheme.spacing.small)),
+                contentScale = ContentScale.Crop,
+            )
+        }
 
         if (shouldShowFavorite) {
             Box(

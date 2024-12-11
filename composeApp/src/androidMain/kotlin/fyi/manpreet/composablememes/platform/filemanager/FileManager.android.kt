@@ -36,6 +36,22 @@ actual class FileManager(
             )
         }
     }
+
+    actual suspend fun Raise<String>.deleteImage(fileName: String) {
+         withContext(Dispatchers.IO) {
+            val activity = mainActivityUseCase.requireActivity()
+
+            catch(
+                catch = { e -> throw Exception("Failed to delete image: ${e.message}") },
+                block = {
+                    val file = File(activity.filesDir, fileName)
+                    ensure(file.exists()) { "Failed to get file path" }
+                    val deleted = file.delete()
+                    ensure(deleted) { "Failed to delete file: $fileName" }
+                }
+            )
+        }
+    }
 /*
     actual suspend fun loadImage(fileName: String): ImageBitmap? {
         return withContext(Dispatchers.IO) {

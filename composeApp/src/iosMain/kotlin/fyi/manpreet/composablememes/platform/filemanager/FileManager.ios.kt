@@ -52,6 +52,25 @@ actual class FileManager {
         }
     }
 
+    @OptIn(ExperimentalForeignApi::class)
+    actual suspend fun Raise<String>.deleteImage(fileName: String) {
+        return withContext(Dispatchers.IO) {
+            catch(
+                catch = { e -> "Failed to delete image: ${e.message}" },
+                block = {
+                    val fileManager = NSFileManager.defaultManager
+                    val documentDirectory = (fileManager.URLsForDirectory(
+                        NSDocumentDirectory,
+                        NSUserDomainMask
+                    ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
+
+                    val fileURL = documentDirectory.URLByAppendingPathComponent(fileName) ?: raise("Failed to get file URL")
+                    ensure(fileManager.removeItemAtURL(fileURL, null)) { "Failed to delete file" }
+                }
+            )
+        }
+    }
+
     /*
     actual suspend fun loadImage(fileName: String): ImageBitmap? {
         return try {

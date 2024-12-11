@@ -43,11 +43,7 @@ class MemeViewModel(
     fun loadMeme(memeName: String) {
         _memeState.update {
             it.copy(
-                meme = Meme(
-                    imageName = memeName,
-                    createdDate = Clock.System.now()
-                        .toLocalDateTime(TimeZone.currentSystemDefault())
-                ),
+                meme = Meme(imageName = memeName),
                 editorOptions = MemeEditorOptions(
                     options = listOf(
                         MemeEditorOptions.Options(
@@ -302,16 +298,15 @@ class MemeViewModel(
             val meme = _memeState.value.meme
             requireNotNull(meme) { "Meme object cannot be null while saving" }
 
-            val imageName = meme.imageName
-            val pathName = "${imageName}_${Clock.System.now().epochSeconds}.jpg"
-            saveImage(imageName, pathName, imageBitmap)
+            val imageName = "${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
+            saveImage(imageName, imageBitmap)
         }
     }
 
-    private suspend fun saveImage(imageName: String, pathName: String, imageBitmap: ImageBitmap) {
+    private suspend fun saveImage(imageName: String, imageBitmap: ImageBitmap) {
         either {
             // The `this` inside either block is now Raise<String>
-            with(fileManager) { this@either.saveImage(imageBitmap, pathName) }
+            with(fileManager) { this@either.saveImage(imageBitmap, imageName) }
         }.fold(
             ifLeft = { println("Error saving image: $it") },
             ifRight = { path ->

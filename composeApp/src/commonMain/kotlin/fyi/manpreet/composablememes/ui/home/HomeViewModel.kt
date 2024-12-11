@@ -2,28 +2,24 @@ package fyi.manpreet.composablememes.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import arrow.core.raise.either
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.allDrawableResources
 import fyi.manpreet.composablememes.data.mapper.toMemeListBottomSheet
-import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.repository.MemeRepository
+import fyi.manpreet.composablememes.platform.filemanager.FileManager
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 import fyi.manpreet.composablememes.ui.home.state.HomeState
 import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 class HomeViewModel(
     private val repository: MemeRepository,
+    private val fileManager: FileManager,
 ) : ViewModel() {
 
     private val _homeState = MutableStateFlow(HomeState())
@@ -66,7 +62,7 @@ class HomeViewModel(
             HomeEvent.BottomSheetEvent.OnFabClick -> onFabClick()
             is HomeEvent.BottomSheetEvent.OnSearchModeChange -> onBottomSheetSearchModeChange(event.value)
             is HomeEvent.BottomSheetEvent.OnSearchTextChange -> onBottomSheetSearchTextChange(event.text)
-            is HomeEvent.BottomSheetEvent.OnMemeSelect -> onBottomSheetMemeClick(event.meme)
+            is HomeEvent.BottomSheetEvent.OnMemeSelect -> onBottomSheetMemeClick()
             is HomeEvent.MemeListEvent.OnMemeFavorite -> onMemeFavoriteClick(event.id)
             is HomeEvent.MemeListEvent.OnMemeSelect -> onMemeSelect(event.id)
             is HomeEvent.MemeListEvent.OnEnterSelectionMode -> onEnterSelectionMode(event.id)
@@ -104,7 +100,7 @@ class HomeViewModel(
         _searchTextBottomSheet.update { text }
     }
 
-    private fun onBottomSheetMemeClick(meme: Meme) {
+    private fun onBottomSheetMemeClick() {
         resetSearchText()
         return
     }
@@ -169,13 +165,7 @@ class HomeViewModel(
 
     private fun onDelete() {
         onDeleteConfirm(false)
-        viewModelScope.launch(Dispatchers.IO) {
-            // TODO Delete from file
-            val memes = _homeState.value.memes.filter { it.isSelected }
-            repository.deleteMemes(memes)
-            onCancel()
-            updateList(sortType = _homeState.value.selectedSortType)
-        }
+        deleteFiles()
     }
 
     private fun updateList(sortType: HomeState.SortTypes) {
@@ -190,5 +180,26 @@ class HomeViewModel(
 
     private fun resetSearchText() {
         _searchTextBottomSheet.update { "" }
+    }
+
+    private fun deleteFiles() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val memes = _homeState.value.memes.filter { it.isSelected }
+            either {
+                with(fileManager) {
+                    memes.forEach { meme ->
+                        this@either.deleteImage(meme.imageName)
+                    }
+                }
+            }.fold(
+                ifLeft = { println("Failed to delete image: $it") },
+                ifRight = {
+                    repository.deleteMemes(memes)
+                    onCancel()
+                    updateList(sortType = _homeState.value.selectedSortType)
+                }
+            )
+        }
+
     }
 }

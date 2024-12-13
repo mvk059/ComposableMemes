@@ -6,7 +6,9 @@ import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.data.repository.MemeRepositoryImpl
 import fyi.manpreet.composablememes.ui.home.HomeViewModel
 import fyi.manpreet.composablememes.ui.meme.MemeViewModel
+import fyi.manpreet.composablememes.usecase.SaveImageUseCase
 import org.koin.core.context.startKoin
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
@@ -20,6 +22,7 @@ fun initKoin(config: KoinAppDeclaration? = null) =
             provideLocalDataSourceModule,
             provideRepositoryModule,
             provideViewModelModule,
+            provideUseCaseModule,
             provideDatabaseModule(),
             provideFileManagerModule(),
         )
@@ -36,4 +39,8 @@ val provideLocalDataSourceModule = module {
 
 val provideRepositoryModule = module {
     singleOf(::MemeRepositoryImpl).bind(MemeRepository::class)
+}
+
+val provideUseCaseModule = module {
+    factoryOf(::SaveImageUseCase)
 }

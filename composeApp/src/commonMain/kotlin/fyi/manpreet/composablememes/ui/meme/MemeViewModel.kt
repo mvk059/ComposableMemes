@@ -10,14 +10,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import arrow.core.raise.either
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.ic_font
 import composablememes.composeapp.generated.resources.ic_font_color
 import composablememes.composeapp.generated.resources.ic_font_size
 import fyi.manpreet.composablememes.data.model.Meme
-import fyi.manpreet.composablememes.data.repository.MemeRepository
-import fyi.manpreet.composablememes.platform.filemanager.FileManager
 import fyi.manpreet.composablememes.ui.meme.mapper.SliderValue
 import fyi.manpreet.composablememes.ui.meme.mapper.sliderValueToFontSize
 import fyi.manpreet.composablememes.ui.meme.state.FontFamilyType
@@ -27,16 +24,17 @@ import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeState
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
 import fyi.manpreet.composablememes.ui.meme.state.ShareOption
+import fyi.manpreet.composablememes.usecase.SaveImageUseCase
 import fyi.manpreet.composablememes.util.MemeConstants
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
 class MemeViewModel(
-    private val repository: MemeRepository,
-    private val fileManager: FileManager,
+    private val saveImageUseCase: SaveImageUseCase,
 ) : ViewModel() {
 
     private val _memeState = MutableStateFlow(MemeState())
@@ -44,6 +42,25 @@ class MemeViewModel(
 
     private val _navigateBackStatus = MutableStateFlow(false)
     val navigateBackStatus = _navigateBackStatus.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            saveImageUseCase.saveState.collectLatest { either ->
+                either.fold(
+                    ifLeft = { error -> println("Error saving image: $error") },
+                    ifRight = { type ->
+                        when (type) {
+                            ShareOption.ShareType.SAVE -> {
+                                _navigateBackStatus.update { true }
+                            }
+
+                            ShareOption.ShareType.SHARE -> {}
+                        }
+                    }
+                )
+            }
+        }
+    }
 
     fun loadMeme(memeName: String) {
         _memeState.update {
@@ -164,7 +181,12 @@ class MemeViewModel(
             MemeEvent.EditorEvent.AddTextBox -> addTextBox()
             is MemeEvent.EditorEvent.RemoveTextBox -> removeTextBox(event.id)
             is MemeEvent.EditorEvent.UpdateTextBox -> updateTextBox(event.text)
-            is MemeEvent.EditorEvent.DeselectTextBox -> deselectTextBox(event.id, event.isSelected, event.isEditable)
+            is MemeEvent.EditorEvent.DeselectTextBox -> deselectTextBox(
+                id = event.id,
+                selected = event.isSelected,
+                editable = event.isEditable
+            )
+
             is MemeEvent.EditorEvent.DeselectAllTextBox -> deselectAllTextBox()
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
@@ -180,7 +202,12 @@ class MemeViewModel(
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontSize -> onFontSizeChange(event.value)
             is MemeEvent.EditorSelectionOptionsBottomBarEvent.FontColor -> onFontColorChange(event.id)
 
-            is MemeEvent.SaveEvent.SaveImage -> saveImage(event.imageBitmap, event.size, event.offset, event.type)
+            is MemeEvent.SaveEvent.SaveImage -> saveImage(
+                imageBitmap = event.imageBitmap,
+                imageSize = event.size,
+                imageOffset = event.offset,
+                type = event.type
+            )
         }
     }
 
@@ -298,73 +325,28 @@ class MemeViewModel(
 
     private fun positionUpdate(id: Long, offset: Offset) {
         _memeState.update {
-            it.copy(textBoxes = it.textBoxes.map { box ->
-                if (box.id == id) box.copy(offset = offset)
-                else box
-            })
+            it.copy(
+                textBoxes = it.textBoxes.map { box ->
+                    if (box.id == id) box.copy(offset = offset)
+                    else box
+                }
+            )
         }
     }
 
-    private fun saveImage(imageBitmap: ImageBitmap, imageSize: Size, imageOffset: Offset, type: ShareOption.ShareType) {
-        viewModelScope.launch {
-            cropImage(imageBitmap = imageBitmap, imageSize = imageSize, imageOffset = imageOffset, type = type)
-        }
-    }
-
-    private suspend fun cropImage(
+    private fun saveImage(
         imageBitmap: ImageBitmap,
         imageSize: Size,
         imageOffset: Offset,
         type: ShareOption.ShareType
     ) {
-        return either {
-            with(fileManager) {
-                this@either.cropImage(imageBitmap, imageOffset, imageSize)
-            }
-        }.fold(
-            ifLeft = { println("Failed to crop image: $it") },
-            ifRight = { bitmap -> saveImage(bitmap, type) }
-        )
-    }
-
-    private suspend fun saveImage(imageBitmap: ImageBitmap, type: ShareOption.ShareType) {
-        val meme = _memeState.value.meme
-        requireNotNull(meme) { "Meme object cannot be null while saving" }
-
-        val imageName = when (type) {
-            ShareOption.ShareType.SAVE -> "${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
-            ShareOption.ShareType.SHARE -> "${MemeConstants.TEMP_FILE_NAME}${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
-        }
-
-        either {
-            with(fileManager) {
-                this@either.saveImage(imageBitmap, imageName)
-            }
-        }.fold(
-            ifLeft = { println("Error saving image: $it") },
-            ifRight = { path ->
-                println("Image saved successfully: $path")
-                when (type) {
-                    ShareOption.ShareType.SAVE -> {
-                        repository.insertMeme(meme.copy(imageName = imageName, path = path))
-                        _navigateBackStatus.update { true }
-                    }
-
-                    ShareOption.ShareType.SHARE -> shareImage(imageName)
-                }
-            }
-        )
-    }
-
-    private fun shareImage(imageName: String) {
         viewModelScope.launch {
-            either {
-                with(fileManager) {
-                    this@either.shareImage(imageName)
-                }
-            }.fold(
-                ifLeft = { println("Error sharing image: $it") },
-                ifRight = { println("Image shared successfully") }
+            saveImageUseCase.saveImage(
+                imageBitmap = imageBitmap,
+                imageSize = imageSize,
+                imageOffset = imageOffset,
+                type = type,
+                meme = requireNotNull(_memeState.value.meme)
             )
         }
     }

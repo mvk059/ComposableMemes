@@ -11,6 +11,7 @@ import fyi.manpreet.composablememes.platform.filemanager.FileManager
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 import fyi.manpreet.composablememes.ui.home.state.HomeState
 import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
+import fyi.manpreet.composablememes.usecase.SaveImageUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.*
@@ -20,6 +21,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 class HomeViewModel(
     private val repository: MemeRepository,
     private val fileManager: FileManager,
+    private val saveImageUseCase: SaveImageUseCase,
 ) : ViewModel() {
 
     private val _homeState = MutableStateFlow(HomeState())
@@ -158,7 +160,10 @@ class HomeViewModel(
     }
 
     private fun onShare() {
-
+        viewModelScope.launch(Dispatchers.IO) {
+            val memes = _homeState.value.memes.filter { it.isSelected }.map { it.imageName }
+            saveImageUseCase.saveImages(memes)
+        }
     }
 
     private fun onDeleteConfirm(value: Boolean) {

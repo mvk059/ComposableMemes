@@ -48,7 +48,7 @@ actual class FileManager(
             val activity = mainActivityUseCase.requireActivity()
 
             catch(
-                catch = { e -> throw Exception("Failed to delete image: ${e.message}") },
+                catch = { e -> "Failed to delete image: ${e.message}" },
                 block = {
                     val file = File(activity.filesDir, fileName)
                     ensure(file.exists()) { "Failed to get file path" }
@@ -63,7 +63,7 @@ actual class FileManager(
         withContext(Dispatchers.IO) {
 
             catch(
-                catch = { e -> throw Exception("Failed to delete image: ${e.message}") },
+                catch = { e -> "Failed to delete image: ${e.message}" },
                 block = {
                     val activity = mainActivityUseCase.requireActivity()
                     val tempFiles = activity.filesDir
@@ -88,11 +88,15 @@ actual class FileManager(
         }
     }
 
-    actual suspend fun Raise<String>.cropImage(imageBitmap: ImageBitmap, offset: Offset, size: Size): ImageBitmap {
+    actual suspend fun Raise<String>.cropImage(
+        imageBitmap: ImageBitmap,
+        offset: Offset,
+        size: Size
+    ): ImageBitmap? {
         return withContext(Dispatchers.IO) {
 
             catch(
-                catch = { e -> throw Exception("Failed to crop image: ${e.message}") },
+                catch = { null },
                 block = {
                     val androidBitmap = imageBitmap.asAndroidBitmap()
                     val croppedBitmap = Bitmap.createBitmap(
@@ -108,29 +112,44 @@ actual class FileManager(
         }
     }
 
-    actual suspend fun Raise<String>.shareImage(imageName: String) {
+    actual suspend fun Raise<String>.shareImage(imageNames: List<String>) {
         withContext(Dispatchers.IO) {
             val activity = mainActivityUseCase.requireActivity()
 
             catch(
-                catch = { e -> throw Exception("Failed to share image: ${e.message}") },
+                catch = { emptyList<String>() },
                 block = {
-                    val imageFile = File(activity.filesDir, imageName)
-                    ensure(imageFile.exists()) { "Image file not found at path: $imageName" }
+                    ensure(imageNames.isNotEmpty()) { "No images provided for sharing" }
 
-                    val contentUri = FileProvider.getUriForFile(
-                        /* context = */ activity,
-                        /* authority = */ "${activity.packageName}.fileprovider",
-                        /* file = */ imageFile
-                    )
+                    val contentUris = imageNames.map { imageName ->
+                        val imageFile = File(activity.filesDir, imageName)
+                        ensure(imageFile.exists()) { "Image file not found at path: $imageName" }
 
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "image/jpeg"
-                        putExtra(Intent.EXTRA_STREAM, contentUri)
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        FileProvider.getUriForFile(
+                            /* context = */ activity,
+                            /* authority = */ "${activity.packageName}.fileprovider",
+                            /* file = */ imageFile
+                        )
                     }
 
-                    val chooserIntent = Intent.createChooser(shareIntent, "Share Image")
+                    val shareIntent = if (contentUris.size == 1) {
+                        Intent(Intent.ACTION_SEND).apply {
+                            type = "image/jpeg"
+                            putExtra(Intent.EXTRA_STREAM, contentUris.first())
+                        }
+                    } else {
+                        Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                            type = "image/jpeg"
+                            putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(contentUris))
+                        }
+                    }
+
+                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                    val chooserIntent = Intent.createChooser(
+                        /* target = */ shareIntent,
+                        /* title = */ if (contentUris.size == 1) "Share Image" else "Share Images"
+                    )
                     chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     activity.startActivity(chooserIntent)
                 }

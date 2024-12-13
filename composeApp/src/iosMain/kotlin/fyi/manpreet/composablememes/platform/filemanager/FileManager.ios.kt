@@ -69,17 +69,28 @@ actual class FileManager {
 
                     val fileURL = documentDirectory.URLByAppendingPathComponent(fileName)?.also {
                         if (!fileManager.fileExistsAtPath(it.path ?: "")) {
-                            fileManager.createFileAtPath(it.path ?: "", contents = null, attributes = null)
+                            fileManager.createFileAtPath(
+                                path = it.path ?: "",
+                                contents = null,
+                                attributes = null
+                            )
                         }
                     } ?: raise("Failed to create file URL")
 
                     // Convert ImageBitmap to CGImage first, then to UIImage
-                    val uiImage: UIImage = bitmap.toUIImage() ?: raise("Failed to convert to UIImage")
-                    val jpeg = UIImageJPEGRepresentation(uiImage, 0.85) ?: raise("Failed to create JPEG data")
+                    val uiImage: UIImage =
+                        bitmap.toUIImage() ?: raise("Failed to convert to UIImage")
+                    val jpeg = UIImageJPEGRepresentation(uiImage, 0.85)
+                        ?: raise("Failed to create JPEG data")
                     val path = fileURL.path ?: raise("Failed to get file path")
                     val imageData = NSData.dataWithData(jpeg)
 
-                    ensure(imageData.writeToFile(path, atomically = true)) { "Failed to write image data to file" }
+                    ensure(
+                        imageData.writeToFile(
+                            path = path,
+                            atomically = true
+                        )
+                    ) { "Failed to write image data to file" }
                     path
                 }
             )
@@ -99,7 +110,8 @@ actual class FileManager {
                     ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
                     val fileURL =
-                        documentDirectory.URLByAppendingPathComponent(fileName) ?: raise("Failed to get file URL")
+                        documentDirectory.URLByAppendingPathComponent(fileName)
+                            ?: raise("Failed to get file URL")
                     ensure(fileManager.removeItemAtURL(fileURL, null)) { "Failed to delete file" }
                 }
             )
@@ -110,9 +122,7 @@ actual class FileManager {
     actual suspend fun Raise<String>.deleteTemporaryImage() {
         withContext(Dispatchers.Default) {
             catch(
-                catch = { e ->
-                    throw Exception("Failed to delete temporary images: ${e.message}", e)
-                },
+                catch = { e -> "Failed to delete temporary images: ${e.message}" },
                 block = {
                     val fileManager = NSFileManager.defaultManager
                     val documentDirectory = (fileManager.URLsForDirectory(
@@ -143,7 +153,11 @@ actual class FileManager {
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun Raise<String>.cropImage(imageBitmap: ImageBitmap, offset: Offset, size: Size): ImageBitmap {
+    actual suspend fun Raise<String>.cropImage(
+        imageBitmap: ImageBitmap,
+        offset: Offset,
+        size: Size
+    ): ImageBitmap? {
         return withContext(Dispatchers.IO) {
 
             catch(
@@ -153,10 +167,10 @@ actual class FileManager {
 
                     val scale = uiImage?.scale ?: 1.0
                     val cropRect = CGRectMake(
-                        offset.x * scale,
-                        offset.y * scale,
-                        size.width * scale,
-                        size.height * scale
+                        x = offset.x * scale,
+                        y = offset.y * scale,
+                        width = size.width * scale,
+                        height = size.height * scale
                     )
 
                     val cgImage = uiImage?.CGImage
@@ -169,35 +183,41 @@ actual class FileManager {
         }
     }
 
-    actual suspend fun Raise<String>.shareImage(imageName: String) {
+    actual suspend fun Raise<String>.shareImage(imageNames: List<String>) {
 
         catch(
-            catch = { e -> throw Exception("Failed to share image: ${e.message}") },
+            catch = { e -> emptyList<String>() },
             block = {
-                val filePath = withContext(Dispatchers.IO) {
+                ensure(imageNames.isNotEmpty()) { "No images provided for sharing" }
+
+                val images = withContext(Dispatchers.IO) {
                     val fileManager = NSFileManager.defaultManager
                     val documentDirectory = (fileManager.URLsForDirectory(
                         NSDocumentDirectory,
                         NSUserDomainMask
                     ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
-                    val fileURL =
-                        documentDirectory.URLByAppendingPathComponent(imageName) ?: raise("Failed to get file URL")
-                    val filePath = fileURL.path ?: raise("Failed to get file path")
-
-                    filePath
+                    imageNames.map { imageName ->
+                        val fileURL = documentDirectory.URLByAppendingPathComponent(imageName)
+                            ?: raise("Failed to get file URL for: $imageName")
+                        val filePath = fileURL.path
+                            ?: raise("Failed to get file path for: $imageName")
+                        UIImage.imageWithContentsOfFile(filePath)
+                            ?: raise("Failed to load image: $imageName")
+                    }
                 }
+
                 // Switch to Main dispatcher for UI operations
                 withContext(Dispatchers.Main) {
-                    val image = UIImage.imageWithContentsOfFile(filePath) ?: raise("Failed to load image")
 
-                    val activityItems = mutableListOf<Any>(image)
+                    val activityItems = images.toMutableList<Any>()
                     val activityViewController = UIActivityViewController(
                         activityItems = activityItems,
                         applicationActivities = null
                     )
 
-                    val rootViewController = UIApplication.sharedApplication.keyWindow?.rootViewController
+                    val rootViewController =
+                        UIApplication.sharedApplication.keyWindow?.rootViewController
                     rootViewController?.presentViewController(
                         viewControllerToPresent = activityViewController,
                         animated = true,
@@ -207,7 +227,6 @@ actual class FileManager {
             }
         )
     }
-
 }
 
 @OptIn(ExperimentalForeignApi::class)

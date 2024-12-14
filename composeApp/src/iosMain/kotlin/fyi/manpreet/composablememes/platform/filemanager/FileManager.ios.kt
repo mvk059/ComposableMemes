@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import arrow.core.raise.Raise
 import arrow.core.raise.catch
 import arrow.core.raise.ensure
+import fyi.manpreet.composablememes.data.model.MemeImageName
+import fyi.manpreet.composablememes.data.model.MemeImagePath
 import fyi.manpreet.composablememes.util.MemeConstants
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.get
@@ -56,10 +58,13 @@ import platform.UIKit.UIImageJPEGRepresentation
 
 actual class FileManager {
 
-    actual suspend fun Raise<String>.saveImage(bitmap: ImageBitmap, fileName: String): String {
+    actual suspend fun Raise<String>.saveImage(
+        bitmap: ImageBitmap,
+        fileName: MemeImageName
+    ): MemeImagePath? {
         return withContext(Dispatchers.IO) {
             catch(
-                catch = { e -> "Failed to save image: ${e.message}" },
+                catch = { null },
                 block = {
                     val fileManager = NSFileManager.defaultManager
                     val documentDirectory = (fileManager.URLsForDirectory(
@@ -67,15 +72,16 @@ actual class FileManager {
                         NSUserDomainMask
                     ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
-                    val fileURL = documentDirectory.URLByAppendingPathComponent(fileName)?.also {
-                        if (!fileManager.fileExistsAtPath(it.path ?: "")) {
-                            fileManager.createFileAtPath(
-                                path = it.path ?: "",
-                                contents = null,
-                                attributes = null
-                            )
-                        }
-                    } ?: raise("Failed to create file URL")
+                    val fileURL =
+                        documentDirectory.URLByAppendingPathComponent(fileName.value)?.also {
+                            if (!fileManager.fileExistsAtPath(it.path ?: "")) {
+                                fileManager.createFileAtPath(
+                                    path = it.path ?: "",
+                                    contents = null,
+                                    attributes = null
+                                )
+                            }
+                        } ?: raise("Failed to create file URL")
 
                     // Convert ImageBitmap to CGImage first, then to UIImage
                     val uiImage: UIImage =
@@ -91,14 +97,14 @@ actual class FileManager {
                             atomically = true
                         )
                     ) { "Failed to write image data to file" }
-                    path
+                    MemeImagePath(path)
                 }
             )
         }
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun Raise<String>.deleteImage(fileName: String) {
+    actual suspend fun Raise<String>.deleteImage(fileName: MemeImageName) {
         return withContext(Dispatchers.IO) {
             catch(
                 catch = { e -> "Failed to delete image: ${e.message}" },
@@ -110,7 +116,7 @@ actual class FileManager {
                     ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
                     val fileURL =
-                        documentDirectory.URLByAppendingPathComponent(fileName)
+                        documentDirectory.URLByAppendingPathComponent(fileName.value)
                             ?: raise("Failed to get file URL")
                     ensure(fileManager.removeItemAtURL(fileURL, null)) { "Failed to delete file" }
                 }
@@ -183,7 +189,7 @@ actual class FileManager {
         }
     }
 
-    actual suspend fun Raise<String>.shareImage(imageNames: List<String>) {
+    actual suspend fun Raise<String>.shareImage(imageNames: List<MemeImageName>) {
 
         catch(
             catch = { e -> emptyList<String>() },
@@ -198,7 +204,7 @@ actual class FileManager {
                     ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
                     imageNames.map { imageName ->
-                        val fileURL = documentDirectory.URLByAppendingPathComponent(imageName)
+                        val fileURL = documentDirectory.URLByAppendingPathComponent(imageName.value)
                             ?: raise("Failed to get file URL for: $imageName")
                         val filePath = fileURL.path
                             ?: raise("Failed to get file path for: $imageName")

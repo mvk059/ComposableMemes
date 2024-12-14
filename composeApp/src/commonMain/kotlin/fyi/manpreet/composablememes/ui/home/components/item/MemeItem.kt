@@ -55,16 +55,17 @@ fun MemeItem(
     ) {
 
         if (isBottomSheetList) {
+            val imagePath = Res.allDrawableResources[meme.path?.value] ?: return
             Image(
                 modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(MaterialTheme.spacing.small)),
-                painter = painterResource(Res.allDrawableResources[meme.path]!!),
+                painter = painterResource(imagePath),
                 contentDescription = null,
                 contentScale = ContentScale.FillBounds
             )
         } else {
             AsyncImage(
                 model = ImageRequest.Builder(LocalPlatformContext.current)
-                    .data(meme.path)
+                    .data(meme.path?.value)
                     .crossfade(true)
                     .build(),
                 contentDescription = null,

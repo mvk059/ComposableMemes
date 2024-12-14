@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import arrow.core.Either
 import arrow.core.raise.either
 import fyi.manpreet.composablememes.data.model.Meme
+import fyi.manpreet.composablememes.data.model.MemeImageName
 import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.platform.filemanager.FileManager
 import fyi.manpreet.composablememes.ui.meme.state.ShareOption
@@ -29,7 +30,7 @@ class SaveImageUseCase(
         MutableStateFlow<Either<SaveError, ShareOption.ShareType>>(Either.Left(SaveError.Initial))
     val saveState = _saveState.asStateFlow()
 
-    suspend fun saveImages(imageNames: List<String>) {
+    suspend fun saveImages(imageNames: List<MemeImageName>) {
         shareImage(imageNames)
     }
 
@@ -76,8 +77,8 @@ class SaveImageUseCase(
     ) {
 
         val imageName = when (type) {
-            ShareOption.ShareType.SAVE -> "${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
-            ShareOption.ShareType.SHARE -> "${MemeConstants.TEMP_FILE_NAME}${meme.imageName}_${Clock.System.now().epochSeconds}.jpg"
+            ShareOption.ShareType.SAVE -> MemeImageName("${meme.imageName}_${Clock.System.now().epochSeconds}.jpg")
+            ShareOption.ShareType.SHARE -> MemeImageName("${MemeConstants.TEMP_FILE_NAME}${meme.imageName}_${Clock.System.now().epochSeconds}.jpg")
         }
 
         either {
@@ -100,7 +101,7 @@ class SaveImageUseCase(
         )
     }
 
-    private suspend fun shareImage(imageName: String) {
+    private suspend fun shareImage(imageName: MemeImageName) {
         either {
             with(fileManager) {
                 this@either.shareImage(listOf(imageName))
@@ -111,7 +112,7 @@ class SaveImageUseCase(
         )
     }
 
-    private suspend fun shareImage(imageName: List<String>) {
+    private suspend fun shareImage(imageName: List<MemeImageName>) {
         either {
             with(fileManager) {
                 this@either.shareImage(imageName)

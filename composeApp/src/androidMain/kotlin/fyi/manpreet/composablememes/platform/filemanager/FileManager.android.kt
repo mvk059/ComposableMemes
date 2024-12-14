@@ -12,6 +12,8 @@ import androidx.core.content.FileProvider
 import arrow.core.raise.Raise
 import arrow.core.raise.catch
 import arrow.core.raise.ensure
+import fyi.manpreet.composablememes.data.model.MemeImageName
+import fyi.manpreet.composablememes.data.model.MemeImagePath
 import fyi.manpreet.composablememes.usecase.MainActivityUseCase
 import fyi.manpreet.composablememes.util.MemeConstants
 import kotlinx.coroutines.Dispatchers
@@ -22,35 +24,39 @@ actual class FileManager(
     private val mainActivityUseCase: MainActivityUseCase,
 ) {
 
-    actual suspend fun Raise<String>.saveImage(bitmap: ImageBitmap, fileName: String): String {
+    actual suspend fun Raise<String>.saveImage(
+        bitmap: ImageBitmap,
+        fileName: MemeImageName
+    ): MemeImagePath? {
         return withContext(Dispatchers.IO) {
             val activity = mainActivityUseCase.requireActivity()
 
             catch(
-                catch = { e -> "Failed to save image: ${e.message}" },
+                catch = { null },
                 block = {
                     // Save the file
-                    activity.openFileOutput(fileName, Context.MODE_PRIVATE).use { outputStream ->
-                        val androidBitmap = bitmap.asAndroidBitmap()
-                        androidBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
-                    }
+                    activity.openFileOutput(fileName.value, Context.MODE_PRIVATE)
+                        .use { outputStream ->
+                            val androidBitmap = bitmap.asAndroidBitmap()
+                            androidBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
+                        }
                     // After the file is properly closed, get its path
-                    val file = File(activity.filesDir, fileName)
+                    val file = File(activity.filesDir, fileName.value)
                     ensure(file.exists()) { "Could not find saved file: $fileName" }
-                    file.path
+                    MemeImagePath(file.path)
                 }
             )
         }
     }
 
-    actual suspend fun Raise<String>.deleteImage(fileName: String) {
+    actual suspend fun Raise<String>.deleteImage(fileName: MemeImageName) {
         withContext(Dispatchers.IO) {
             val activity = mainActivityUseCase.requireActivity()
 
             catch(
                 catch = { e -> "Failed to delete image: ${e.message}" },
                 block = {
-                    val file = File(activity.filesDir, fileName)
+                    val file = File(activity.filesDir, fileName.value)
                     ensure(file.exists()) { "Failed to get file path" }
                     val deleted = file.delete()
                     ensure(deleted) { "Failed to delete file: $fileName" }
@@ -112,7 +118,7 @@ actual class FileManager(
         }
     }
 
-    actual suspend fun Raise<String>.shareImage(imageNames: List<String>) {
+    actual suspend fun Raise<String>.shareImage(imageNames: List<MemeImageName>) {
         withContext(Dispatchers.IO) {
             val activity = mainActivityUseCase.requireActivity()
 
@@ -122,7 +128,7 @@ actual class FileManager(
                     ensure(imageNames.isNotEmpty()) { "No images provided for sharing" }
 
                     val contentUris = imageNames.map { imageName ->
-                        val imageFile = File(activity.filesDir, imageName)
+                        val imageFile = File(activity.filesDir, imageName.value)
                         ensure(imageFile.exists()) { "Image file not found at path: $imageName" }
 
                         FileProvider.getUriForFile(

@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import fyi.manpreet.composablememes.data.model.MemeImageName
 import fyi.manpreet.composablememes.navigation.HomeDestination
 import fyi.manpreet.composablememes.navigation.MemeDestination
 import fyi.manpreet.composablememes.ui.home.HomeViewModel
@@ -44,7 +45,7 @@ fun App(
                     onSearchTextChangeBottomSheet = viewModel::onEvent,
                     onMemeSelectBottomSheet = {
                         viewModel.onEvent(it)
-                        navController.navigate(MemeDestination(it.meme.imageName))
+                        navController.navigate(MemeDestination(it.meme.imageName.value))
                     },
                     onFavoriteClick = viewModel::onEvent,
                     onSelectClick = viewModel::onEvent,
@@ -62,7 +63,7 @@ fun App(
             composable<MemeDestination> {
                 val args = it.toRoute<MemeDestination>()
                 MemeScreen(
-                    memeName = args.memeName,
+                    memeName = MemeImageName( args.memeName),
                     navigateBack = {
                         navController.previousBackStackEntry?.savedStateHandle?.set(MemeConstants.NAVIGATE_BACK_RELOAD, true)
                         navController.popBackStack()

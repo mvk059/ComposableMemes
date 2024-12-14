@@ -3,12 +3,13 @@ package fyi.manpreet.composablememes.ui.meme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import fyi.manpreet.composablememes.data.model.MemeImageName
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MemeScreen(
     viewModel: MemeViewModel = koinViewModel(),
-    memeName: String,
+    memeName: MemeImageName,
     navigateBack: () -> Unit,
 ) {
     val memeState = viewModel.memeState.collectAsStateWithLifecycle()

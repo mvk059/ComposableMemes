@@ -104,7 +104,7 @@ fun MemeImage(
     onImageSizeUpdate: (Size, Offset) -> Unit,
 ) {
 
-    val image: DrawableResource = Res.allDrawableResources[meme.imageName] ?: return
+    val image: DrawableResource = Res.allDrawableResources[meme.imageName.value] ?: return
     val painter = painterResource(image)
 
     Box(

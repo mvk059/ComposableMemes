@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -105,7 +104,7 @@ fun MemeListBottomSheet(
 }
 
 @Composable
-private fun ColumnScope.ListContent(
+private fun ListContent(
     modifier: Modifier = Modifier,
     memeList: List<Meme>,
     onMemeSelected: (HomeEvent.BottomSheetEvent.OnMemeSelect) -> Unit,
@@ -118,7 +117,7 @@ private fun ColumnScope.ListContent(
 
         items(
             items = memeList,
-            key = { memes -> memes.imageName },
+            key = { memes -> memes.imageName.value },
         ) { meme ->
 
             MemeItem(

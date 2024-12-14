@@ -14,6 +14,7 @@ data class Gradients(
     val favorite: Brush = GradientFavorite,
     val selection: Brush = GradientSelection,
     val borderButton: Brush = GradientButtonBorder,
+    val bottomScreenShadow: Brush = GradientBottomScreenShadow,
 ) {
 
     private companion object {
@@ -46,6 +47,15 @@ data class Gradients(
 
         val GradientButtonBorder = Brush.linearGradient(
             colors = listOf(PrimaryContainer.copy(0.5f), PurpleMedium1.copy(0.5f))
+        )
+
+        val GradientBottomScreenShadow = Brush.linearGradient(
+            colorStops = arrayOf(
+                0.0f to Color.Transparent,
+                1.0f to Color(0xFF141218)
+            ),
+            start = Offset(Offset.Infinite.x, 0f),
+            end = Offset(Offset.Infinite.x, Offset.Infinite.y),
         )
     }
 }

@@ -2,14 +2,19 @@ package fyi.manpreet.composablememes.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -17,7 +22,6 @@ import androidx.navigation.NavController
 import com.composables.core.SheetDetent.Companion.FullyExpanded
 import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
-import fyi.manpreet.composablememes.util.Peek
 import fyi.manpreet.composablememes.ui.home.components.bottomsheet.MemeListBottomSheet
 import fyi.manpreet.composablememes.ui.home.components.delete.DeleteDialog
 import fyi.manpreet.composablememes.ui.home.components.empty.HomeScreenEmpty
@@ -27,8 +31,10 @@ import fyi.manpreet.composablememes.ui.home.components.topbar.HomeTopBar
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 import fyi.manpreet.composablememes.ui.home.state.HomeState
 import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
+import fyi.manpreet.composablememes.ui.theme.gradient
 import fyi.manpreet.composablememes.ui.theme.spacing
 import fyi.manpreet.composablememes.util.MemeConstants
+import fyi.manpreet.composablememes.util.Peek
 
 @Composable
 fun HomeScreen(
@@ -101,38 +107,51 @@ fun HomeScreen(
             return@Scaffold
         }
 
-        LazyVerticalGrid(
-            modifier = modifier.padding(top = MaterialTheme.spacing.large3XL),
-            columns = GridCells.Fixed(2),
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
 
-            items(
-                items = homeState.memes,
-                key = { memes -> memes.id },
-            ) { meme ->
+            LazyVerticalGrid(
+                modifier = modifier.padding(top = MaterialTheme.spacing.large3XL),
+                columns = GridCells.Fixed(2),
+            ) {
 
-                MemeItem(
-                    modifier = Modifier.pointerInput(Unit) {
-                        detectTapGestures(
-                            onLongPress = {
-                                onEnterSelectionMode(
-                                    HomeEvent.MemeListEvent.OnEnterSelectionMode(
-                                        meme.id
-                                    )
+                itemsIndexed(
+                    items = homeState.memes,
+                    key = { _, memes -> memes.id },
+                ) { index, meme ->
+
+                    val paddingBottom =
+                        if (index == homeState.memes.lastIndex) MaterialTheme.spacing.large2XL
+                        else MaterialTheme.spacing.none
+
+                    MemeItem(
+                        modifier = Modifier
+                            .padding(bottom = paddingBottom)
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onLongPress = {
+                                        onEnterSelectionMode(HomeEvent.MemeListEvent.OnEnterSelectionMode(meme.id))
+                                    },
+                                    onTap = {
+                                        onSelectClick(HomeEvent.MemeListEvent.OnMemeSelect(meme.id))
+                                    }
                                 )
                             },
-                            onTap = {
-                                onSelectClick(HomeEvent.MemeListEvent.OnMemeSelect(meme.id))
-                            }
-                        )
-                    },
-                    meme = meme,
-                    shouldShowFavorite = homeState.isSelectionMode.not(),
-                    shouldShowSelection = homeState.isSelectionMode,
-                    onFavoriteClick = onFavoriteClick,
-                    onSelectClick = onSelectClick,
-                )
+                        meme = meme,
+                        shouldShowFavorite = homeState.isSelectionMode.not(),
+                        shouldShowSelection = homeState.isSelectionMode,
+                        onFavoriteClick = onFavoriteClick,
+                        onSelectClick = onSelectClick,
+                    )
+                }
             }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(height = MaterialTheme.spacing.large4XL)
+                    .align(alignment = Alignment.BottomCenter)
+                    .background(brush = MaterialTheme.gradient.bottomScreenShadow)
+            )
         }
     }
 

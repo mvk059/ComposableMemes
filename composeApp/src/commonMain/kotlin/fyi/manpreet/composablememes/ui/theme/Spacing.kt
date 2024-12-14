@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 data class Spacing(
-    val default: Dp = 0.dp,
+    val none: Dp = 0.dp,
     val extraSmall: Dp = 4.dp,
     val small: Dp = 8.dp,
     val smallMedium: Dp = 12.dp,
@@ -17,6 +17,7 @@ data class Spacing(
     val largeXL: Dp = 32.dp,
     val large2XL: Dp = 48.dp,
     val large3XL: Dp = 64.dp,
+    val large4XL: Dp = 80.dp,
 
     val fabContainerWidth: Dp = 56.dp,
     val fabContainerHeight: Dp = 56.dp,

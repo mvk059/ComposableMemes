@@ -102,6 +102,7 @@ fun MemeImage(
     onTextBoxTextChange: (MemeEvent.EditorEvent) -> Unit,
     onDeselectClick: (MemeEvent.EditorEvent) -> Unit,
     onImageSizeUpdate: (Size, Offset) -> Unit,
+    onEditorSizeUpdate: (MemeEvent.EditorEvent) -> Unit,
 ) {
 
     val image: DrawableResource = Res.allDrawableResources[meme.imageName.value] ?: return
@@ -156,6 +157,7 @@ fun MemeImage(
                         val imageSize = Size(actualWidth, actualHeight)
                         val imageOffset = Offset(offsetX, offsetY)
                         onImageSizeUpdate(imageSize, imageOffset)
+                        onEditorSizeUpdate(MemeEvent.EditorEvent.EditorSize(coordinates.size))
                     },
                 painter = painter,
                 contentDescription = null,

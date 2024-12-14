@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import composablememes.composeapp.generated.resources.Res
@@ -27,6 +28,7 @@ import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
 import fyi.manpreet.composablememes.ui.meme.state.ShareOption
 import fyi.manpreet.composablememes.usecase.SaveImageUseCase
 import fyi.manpreet.composablememes.util.MemeConstants
+import fyi.manpreet.composablememes.util.middle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -192,6 +194,7 @@ class MemeViewModel(
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
+            is MemeEvent.EditorEvent.EditorSize -> editorSizeUpdate(event.size)
 
             is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
@@ -232,7 +235,7 @@ class MemeViewModel(
         val newTextBox = MemeTextBox(
             id = id,
             text = text,
-            offset = Offset.Zero,
+            offset = _memeState.value.editorSize.middle(),
             isSelected = true,
             isEditable = true,
             textStyle = TextStyle(
@@ -333,6 +336,10 @@ class MemeViewModel(
                 }
             )
         }
+    }
+
+    private fun editorSizeUpdate(size: IntSize) {
+        _memeState.update { it.copy(editorSize = size) }
     }
 
     private fun saveImage(

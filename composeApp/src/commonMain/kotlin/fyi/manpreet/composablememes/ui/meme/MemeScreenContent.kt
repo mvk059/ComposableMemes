@@ -46,6 +46,7 @@ fun MemeScreenContent(
     onBackClickDialog: (MemeEvent.TopBarEvent) -> Unit,
     onAddTextBottomBar: (MemeEvent.EditorEvent) -> Unit,
     onPositionUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
+    onSizeUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxTextChangeEditor: (MemeEvent.EditorEvent) -> Unit,
@@ -96,6 +97,7 @@ fun MemeScreenContent(
                     imageContentSize = size
                     imageContentOffset = offset
                 },
+                onEditorSizeUpdate = onSizeUpdateEditor,
             )
 
             if (shouldShowEditOptions) {

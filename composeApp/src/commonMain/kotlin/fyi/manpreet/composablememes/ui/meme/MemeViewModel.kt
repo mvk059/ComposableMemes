@@ -197,8 +197,11 @@ class MemeViewModel(
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
-            is MemeEvent.EditorEvent.EditorSize -> editorSizeUpdate(event.size)
-            is MemeEvent.EditorEvent.EditorImageSize -> editorImageSizeUpdate(event.size, event.offset)
+            is MemeEvent.EditorEvent.EditorSize -> editorSizeUpdate(
+                size = event.editorSize,
+                imageSize = event.imageSize,
+                imageOffset = event.imageOffset
+            )
 
             MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
@@ -342,16 +345,12 @@ class MemeViewModel(
         }
     }
 
-    private fun editorSizeUpdate(size: IntSize) {
-        _memeState.update { it.copy(editorOptions = it.editorOptions.copy(editorSize = size)) }
-    }
-
-    private fun editorImageSizeUpdate(size: Size, offset: Offset) {
+    private fun editorSizeUpdate(size: IntSize, imageSize: Size, imageOffset: Offset) {
         _memeState.update {
             it.copy(
                 editorOptions = it.editorOptions.copy(
-                    imageContentSize = size,
-                    imageContentOffset = offset
+                    editorSize = size, imageContentSize = imageSize,
+                    imageContentOffset = imageOffset
                 )
             )
         }

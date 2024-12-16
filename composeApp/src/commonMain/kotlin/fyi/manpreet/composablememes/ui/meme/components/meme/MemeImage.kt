@@ -168,8 +168,13 @@ fun MemeImage(
 
                         val imageSize = Size(actualWidth, actualHeight)
                         val imageOffset = Offset(offsetX, offsetY)
-                        onImageSizeUpdate(MemeEvent.EditorEvent.EditorImageSize(imageSize, imageOffset))
-                        onEditorSizeUpdate(MemeEvent.EditorEvent.EditorSize(coordinates.size))
+                        onEditorSizeUpdate(
+                            MemeEvent.EditorEvent.EditorSize(
+                                editorSize = coordinates.size,
+                                imageSize = imageSize,
+                                imageOffset = imageOffset
+                            )
+                        )
                     },
                 painter = painter,
                 contentDescription = null,

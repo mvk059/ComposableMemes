@@ -5,16 +5,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import com.composables.core.ModalBottomSheetState
 import com.composables.core.SheetDetent
 import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
@@ -36,7 +31,7 @@ import kotlinx.coroutines.launch
 fun MemeScreenContent(
     meme: Meme?,
     textBoxes: List<MemeTextBox>,
-    editorOptionsBottomBar: MemeEditorOptions,
+    editorOptions: MemeEditorOptions,
     editorSelectionOptionsBottomBar: MemeEditorSelectionOptions,
     isBackDialogVisible: Boolean,
     shouldShowEditOptions: Boolean,
@@ -47,6 +42,7 @@ fun MemeScreenContent(
     onAddTextBottomBar: (MemeEvent.EditorEvent) -> Unit,
     onPositionUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
     onSizeUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
+    onImageSizeUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxTextChangeEditor: (MemeEvent.EditorEvent) -> Unit,
@@ -62,9 +58,7 @@ fun MemeScreenContent(
 
     val scope = rememberCoroutineScope()
     val graphicsLayer = rememberGraphicsLayer()
-    val shareSheetState = rememberModalBottomSheetState(initialDetent = Hidden)
-    var imageContentSize by remember { mutableStateOf(Size.Zero) }
-    var imageContentOffset by remember { mutableStateOf(Offset.Zero) }
+    val shareSheetState: ModalBottomSheetState = rememberModalBottomSheetState(initialDetent = Hidden)
 
     Scaffold(
         topBar = {
@@ -86,24 +80,21 @@ fun MemeScreenContent(
                 meme = meme,
                 textBoxes = textBoxes,
                 graphicsLayer = graphicsLayer,
-                imageContentSize = imageContentSize,
-                imageContentOffset = imageContentOffset,
+                imageContentSize = editorOptions.imageContentSize,
+                imageContentOffset = editorOptions.imageContentOffset,
                 onPositionUpdate = onPositionUpdateEditor,
                 onTextBoxClick = onTextBoxClickEditor,
                 onTextBoxCloseClick = onTextBoxCloseClickEditor,
                 onTextBoxTextChange = onTextBoxTextChangeEditor,
                 onDeselectClick = onDeselectClickEditor,
-                onImageSizeUpdate = { size, offset ->
-                    imageContentSize = size
-                    imageContentOffset = offset
-                },
+                onImageSizeUpdate = onImageSizeUpdateEditor,
                 onEditorSizeUpdate = onSizeUpdateEditor,
             )
 
             if (shouldShowEditOptions) {
                 MemeBottomBarEditOptions(
                     modifier = Modifier.align(Alignment.BottomCenter),
-                    editorOptions = editorOptionsBottomBar,
+                    editorOptions = editorOptions,
                     editorSelectionOptions = editorSelectionOptionsBottomBar,
                     onEditorOptionsItemClick = onEditorOptionsItemClickBottomBar,
                     onFontItemSelect = onFontItemSelectBottomBar,
@@ -135,8 +126,8 @@ fun MemeScreenContent(
                 onSaveImageBottomSheet(
                     MemeEvent.SaveEvent.SaveImage(
                         imageBitmap = graphicsLayer.toImageBitmap(),
-                        offset = imageContentOffset,
-                        size = imageContentSize,
+                        offset = editorOptions.imageContentOffset,
+                        size = editorOptions.imageContentSize,
                         type = type,
                     )
                 )

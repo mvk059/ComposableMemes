@@ -70,6 +70,9 @@ class MemeViewModel(
             it.copy(
                 meme = Meme(imageName = memeName),
                 editorOptions = MemeEditorOptions(
+                    editorSize = IntSize.Zero,
+                    imageContentSize = Size.Zero,
+                    imageContentOffset = Offset.Zero,
                     options = listOf(
                         MemeEditorOptions.Options(
                             type = MemeEvent.EditorOptionsBottomBarEvent.Font,
@@ -190,15 +193,16 @@ class MemeViewModel(
                 editable = event.isEditable
             )
 
-            is MemeEvent.EditorEvent.DeselectAllTextBox -> deselectAllTextBox()
+            MemeEvent.EditorEvent.DeselectAllTextBox -> deselectAllTextBox()
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
             is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
             is MemeEvent.EditorEvent.EditorSize -> editorSizeUpdate(event.size)
+            is MemeEvent.EditorEvent.EditorImageSize -> editorImageSizeUpdate(event.size, event.offset)
 
-            is MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
-            is MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
-            is MemeEvent.EditorOptionsBottomBarEvent.FontColor -> onEditOptionsBottomBarFontColorSelection()
+            MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
+            MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
+            MemeEvent.EditorOptionsBottomBarEvent.FontColor -> onEditOptionsBottomBarFontColorSelection()
             MemeEvent.EditorOptionsBottomBarEvent.Close -> deselectAllTextBox()
             MemeEvent.EditorOptionsBottomBarEvent.Done -> applyTextBoxStyle()
 
@@ -235,7 +239,7 @@ class MemeViewModel(
         val newTextBox = MemeTextBox(
             id = id,
             text = text,
-            offset = _memeState.value.editorSize.middle(),
+            offset = _memeState.value.editorOptions.editorSize.middle(),
             isSelected = true,
             isEditable = true,
             textStyle = TextStyle(
@@ -339,7 +343,18 @@ class MemeViewModel(
     }
 
     private fun editorSizeUpdate(size: IntSize) {
-        _memeState.update { it.copy(editorSize = size) }
+        _memeState.update { it.copy(editorOptions = it.editorOptions.copy(editorSize = size)) }
+    }
+
+    private fun editorImageSizeUpdate(size: Size, offset: Offset) {
+        _memeState.update {
+            it.copy(
+                editorOptions = it.editorOptions.copy(
+                    imageContentSize = size,
+                    imageContentOffset = offset
+                )
+            )
+        }
     }
 
     private fun saveImage(

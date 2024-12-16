@@ -40,7 +40,6 @@ fun MemeScreen(
         onAddTextBottomBar = viewModel::onEvent,
         onPositionUpdateEditor = viewModel::onEvent,
         onSizeUpdateEditor = viewModel::onEvent,
-        onImageSizeUpdateEditor = viewModel::onEvent,
         onTextBoxClickEditor = viewModel::onEvent,
         onTextBoxCloseClickEditor = viewModel::onEvent,
         onTextBoxTextChangeEditor = viewModel::onEvent,

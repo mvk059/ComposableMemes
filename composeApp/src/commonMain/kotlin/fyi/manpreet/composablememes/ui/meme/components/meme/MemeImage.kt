@@ -113,7 +113,6 @@ fun MemeImage(
     onTextBoxCloseClick: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxTextChange: (MemeEvent.EditorEvent) -> Unit,
     onDeselectClick: (MemeEvent.EditorEvent) -> Unit,
-    onImageSizeUpdate: (MemeEvent.EditorEvent) -> Unit,
     onEditorSizeUpdate: (MemeEvent.EditorEvent) -> Unit,
 ) {
 

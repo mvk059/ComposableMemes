@@ -42,7 +42,6 @@ fun MemeScreenContent(
     onAddTextBottomBar: (MemeEvent.EditorEvent) -> Unit,
     onPositionUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
     onSizeUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
-    onImageSizeUpdateEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxTextChangeEditor: (MemeEvent.EditorEvent) -> Unit,
@@ -87,7 +86,6 @@ fun MemeScreenContent(
                 onTextBoxCloseClick = onTextBoxCloseClickEditor,
                 onTextBoxTextChange = onTextBoxTextChangeEditor,
                 onDeselectClick = onDeselectClickEditor,
-                onImageSizeUpdate = onImageSizeUpdateEditor,
                 onEditorSizeUpdate = onSizeUpdateEditor,
             )
 

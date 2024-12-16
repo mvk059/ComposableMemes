@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import fyi.manpreet.composablememes.ui.theme.spacing
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MemeBottomBar(
     modifier: Modifier = Modifier,
@@ -77,21 +79,25 @@ fun MemeBottomBar(
             }
         )
 
-        Button(
-            modifier = Modifier.background(
-                brush = gradient,
-                shape = MaterialTheme.shapes.medium
-            ),
-            colors = ButtonDefaults.buttonColors().copy(containerColor = Color.Transparent),
-            interactionSource = interactionSource,
-            onClick = { onSaveImage() },
-            content = {
-                Text(
-                    text = stringResource(Res.string.meme_bottom_bar_save_meme),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.fixedAccentColors.onPrimaryFixed,
-                )
-            }
-        )
+        CompositionLocalProvider(LocalRippleConfiguration provides null) {
+
+            Button(
+                modifier = Modifier.background(
+                    brush = gradient,
+                    shape = MaterialTheme.shapes.medium
+                ),
+                colors = ButtonDefaults.buttonColors().copy(containerColor = Color.Transparent),
+                interactionSource = interactionSource,
+                onClick = { onSaveImage() },
+                content = {
+                    Text(
+                        text = stringResource(Res.string.meme_bottom_bar_save_meme),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.fixedAccentColors.onPrimaryFixed,
+                    )
+                }
+            )
+        }
+
     }
 }

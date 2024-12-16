@@ -247,7 +247,7 @@ class MemeViewModel(
             id = id,
             text = text,
             offset = editorSize.middle() + contentOffset,
-            relativePosition = editorSize.relativeMiddle(contentOffset),
+            relativePosition = editorSize.relativeMiddle(),
             isSelected = true,
             isEditable = true,
             textStyle = TextStyle(

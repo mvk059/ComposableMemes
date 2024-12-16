@@ -53,7 +53,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toIntSize
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.allDrawableResources
 import fyi.manpreet.composablememes.data.model.Meme
@@ -62,6 +61,7 @@ import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
 import fyi.manpreet.composablememes.ui.theme.fixedAccentColors
 import fyi.manpreet.composablememes.ui.theme.spacing
+import fyi.manpreet.composablememes.util.noRippleClickable
 import fyi.manpreet.composablememes.util.toOffset
 import fyi.manpreet.composablememes.util.toRelativePosition
 import org.jetbrains.compose.resources.DrawableResource
@@ -252,7 +252,7 @@ fun MemeImage(
         Box(
             Modifier
                 .size(imageContentSize.width.dp, imageContentSize.height.dp)
-                .clickable { onDeselectClick(MemeEvent.EditorEvent.DeselectAllTextBox) }
+                .noRippleClickable { onDeselectClick(MemeEvent.EditorEvent.DeselectAllTextBox) }
         ) {
 
             textBoxes.forEach { textBox ->

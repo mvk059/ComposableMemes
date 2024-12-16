@@ -1,5 +1,10 @@
 package fyi.manpreet.composablememes.util
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.IntSize
@@ -14,7 +19,7 @@ fun IntSize.middle(): Offset {
     return Offset(width / 4f, height / 2f)
 }
 
-fun IntSize.relativeMiddle(contentOffset: Offset): RelativePosition {
+fun IntSize.relativeMiddle(): RelativePosition {
     val middlePoint = this.middle()
     return RelativePosition(
         percentX = middlePoint.x / this.width,
@@ -34,4 +39,13 @@ fun Offset.toRelativePosition(size: Size, contentOffset: Offset): RelativePositi
         percentX = (x - contentOffset.x) / size.width,
         percentY = (y - contentOffset.y) / size.height
     )
+}
+
+fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
+    clickable(
+        indication = null,
+        interactionSource = remember { MutableInteractionSource() }
+    ) {
+        onClick()
+    }
 }

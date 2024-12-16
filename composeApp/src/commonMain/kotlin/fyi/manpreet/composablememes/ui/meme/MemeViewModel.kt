@@ -29,6 +29,7 @@ import fyi.manpreet.composablememes.ui.meme.state.ShareOption
 import fyi.manpreet.composablememes.usecase.SaveImageUseCase
 import fyi.manpreet.composablememes.util.MemeConstants
 import fyi.manpreet.composablememes.util.middle
+import fyi.manpreet.composablememes.util.relativeMiddle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -196,7 +197,7 @@ class MemeViewModel(
             MemeEvent.EditorEvent.DeselectAllTextBox -> deselectAllTextBox()
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
-            is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset)
+            is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset, event.relativePosition)
             is MemeEvent.EditorEvent.EditorSize -> editorSizeUpdate(
                 size = event.editorSize,
                 imageSize = event.imageSize,
@@ -239,10 +240,14 @@ class MemeViewModel(
         val id = Clock.System.now().epochSeconds
         val text = "TAP TWICE TO EDIT"
         val fontSize = MemeConstants.DEFAULT_SLIDER_VALUE
+        val editorSize = _memeState.value.editorOptions.editorSize
+        val contentOffset = _memeState.value.editorOptions.imageContentOffset
+
         val newTextBox = MemeTextBox(
             id = id,
             text = text,
-            offset = _memeState.value.editorOptions.editorSize.middle(),
+            offset = editorSize.middle() + contentOffset,
+            relativePosition = editorSize.relativeMiddle(contentOffset),
             isSelected = true,
             isEditable = true,
             textStyle = TextStyle(
@@ -334,11 +339,11 @@ class MemeViewModel(
         unselectAllTextBox()
     }
 
-    private fun positionUpdate(id: Long, offset: Offset) {
+    private fun positionUpdate(id: Long, offset: Offset, relativePosition: MemeTextBox.RelativePosition) {
         _memeState.update {
             it.copy(
                 textBoxes = it.textBoxes.map { box ->
-                    if (box.id == id) box.copy(offset = offset)
+                    if (box.id == id) box.copy(offset = offset, relativePosition = relativePosition)
                     else box
                 }
             )
@@ -349,7 +354,8 @@ class MemeViewModel(
         _memeState.update {
             it.copy(
                 editorOptions = it.editorOptions.copy(
-                    editorSize = size, imageContentSize = imageSize,
+                    editorSize = size,
+                    imageContentSize = imageSize,
                     imageContentOffset = imageOffset
                 )
             )

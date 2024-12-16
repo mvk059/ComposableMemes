@@ -26,7 +26,12 @@ sealed interface MemeEvent {
         ) : EditorEvent
 
         data object DeselectAllTextBox : EditorEvent
-        data class PositionUpdate(val id: Long, val offset: Offset) : EditorEvent
+        data class PositionUpdate(
+            val id: Long,
+            val offset: Offset,
+            val relativePosition: MemeTextBox.RelativePosition
+        ) : EditorEvent
+
         data class EditorSize(val editorSize: IntSize, val imageSize: Size, val imageOffset: Offset) : EditorEvent
     }
 

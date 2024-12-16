@@ -53,6 +53,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toIntSize
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.allDrawableResources
 import fyi.manpreet.composablememes.data.model.Meme
@@ -61,43 +62,110 @@ import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
 import fyi.manpreet.composablememes.ui.theme.fixedAccentColors
 import fyi.manpreet.composablememes.ui.theme.spacing
+import fyi.manpreet.composablememes.util.toOffset
+import fyi.manpreet.composablememes.util.toRelativePosition
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
 
 /**
- * Composable that displays the meme image and text boxes on top of it.
- * The text boxes fits entirely inside the bounds of the image
+ * A composable that displays a meme image with interactive, draggable text boxes positioned on top.
+ * The text boxes stay within the image bounds regardless of screen orientation changes or container resizing.
  *
- * Logic of fitting the text boxes inside the image bounds:
+ * Core Concepts:
  *
- * `ContentScale.Fit` - ContentScale.Fit is a scaling method that ensures:
- * * The entire image is visible
- * * No part of the image is cropped
- * * Aspect ratio is maintained
- * * The image fits completely within the container
+ * 1. Image Scaling and Positioning
+ * --------------------------------
+ * ContentScale.Fit ensures:
+ * - The entire image is visible without cropping
+ * - Aspect ratio is preserved
+ * - Image fits completely within container bounds
+ * - Creates letterboxing (empty spaces) when container and image ratios differ
  *
- * When ContentScale.Fit is used, the image will:
- * * Scale to fit entirely within the container
- * * Maintain its original proportions
- * * Potentially create empty spaces (letterboxing) if the container's shape differs from the image's
+ * Image positioning is calculated using aspect ratios:
+ * - Image aspect ratio = original width / original height
+ * - Container aspect ratio = container width / container height
  *
- * `OnGloballyPositioned calculation` - The onGloballyPositioned modifier is used to calculate the size and position of the image.
+ * Two scaling scenarios:
  *
- * Aspect Ratio - An aspect ratio is the proportional relationship between an image's width and height.
+ * a) If image aspect ratio > container aspect ratio:
+ *    - `Width` = container width
+ *    - `Height` = container width / image aspect ratio
+ *    - `X offset` = 0
+ *    - `Y offset` = (container height - scaled height) / 2
  *
- * If the aspect ratio of the original image without scaling is greater than the aspect ratio of the parent composable,
- * the image will be scaled to fit the width of the parent composable and the height will be calculated based on the aspect ratio of the image.
- * * scaled width: width of the parent composable
- * * scaled height: width of the parent composable divided by the aspect ratio of the image
- * * offsetX: 0 as the entire width of the image is visible
- * * offsetY: Subtract the scaled image width from the parent composable height and divide by 2 to center the image horizontally
+ * b) If image aspect ratio ≤ container aspect ratio:
+ *    - `Width` = container height * image aspect ratio
+ *    - `Height` = container height
+ *    - `X offset` = (container width - scaled width) / 2
+ *    - `Y offset` = 0
  *
- * If the aspect ratio of the original image without scaling is less than the aspect ratio of the parent composable,
- * the image will be scaled to fit the height of the parent composable and the width will be calculated based on the aspect ratio of the image.
+ * 2. Text Box Positioning System
+ * -----------------------------
+ * Uses two coordinate systems:
  *
+ * a) Absolute coordinates (Offset):
+ *    - Actual pixel positions on screen
+ *    - Accounts for letterboxing via imageContentOffset
+ *    - Used for immediate rendering and drag operations
  *
+ * b) Relative coordinates (RelativePosition):
+ *    - Percentage-based positioning (0.0 to 1.0)
+ *    - Stored as percentX and percentY
+ *    - Orientation and size independent
+ *
+ * Conversion formulas:
+ *
+ * - Relative to Absolute:
+ *   x = (percentX * imageWidth) + offsetX
+ *   y = (percentY * imageHeight) + offsetY
+ *
+ * - Absolute to Relative:
+ *   percentX = (x - offsetX) / imageWidth
+ *   percentY = (y - offsetY) / imageHeight
+ *
+ * 3. State Management and Recomposition
+ * -----------------------------------
+ * Critical remember keys:
+ * - `textBox.id`: Ensures state persistence per text box
+ * - `imageContentSize`: Triggers recalculation on container resizing
+ * - `imageContentOffset`: Updates positioning when letterboxing changes
+ *
+ * Local states with remember:
+ * - `contentSize`: Tracks text box dimensions
+ * - `localOffset`: Maintains current drag position
+ *
+ * 4. Drag Constraints
+ * ------------------
+ * Bounds checking ensures text boxes stay within image:
+ * - `X boundaries`:
+ *   min = imageContentOffset.x
+ *   max = imageContentOffset.x + imageWidth - textBoxWidth
+ *
+ * - `Y boundaries`:
+ *   min = imageContentOffset.y
+ *   max = imageContentOffset.y + imageHeight - textBoxHeight
+ *
+ * 5. Touch Interaction System
+ * --------------------------
+ * Multiple input handlers:
+ * - Single tap: Selects text box
+ * - Double tap: Enables editing mode
+ * - Drag: Updates position while maintaining bounds
+ *
+ * @param modifier Modifier for the root container
+ * @param meme The meme data containing image information
+ * @param textBoxes List of text boxes to display on the image
+ * @param graphicsLayer Graphics layer for image effects
+ * @param imageContentSize Actual size of the scaled image
+ * @param imageContentOffset Offset of the image due to letterboxing
+ * @param onPositionUpdate Callback for text box position updates
+ * @param onTextBoxClick Callback for text box selection/editing
+ * @param onTextBoxCloseClick Callback for text box deletion
+ * @param onTextBoxTextChange Callback for text content updates
+ * @param onDeselectClick Callback for deselection events
+ * @param onEditorSizeUpdate Callback for container size updates
  */
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -188,15 +256,19 @@ fun MemeImage(
         ) {
 
             textBoxes.forEach { textBox ->
-                var contentSize by remember { mutableStateOf(IntSize.Zero) }
-                var localOffset by remember(textBox.id) { mutableStateOf(textBox.offset) }
+                var contentSize by remember(textBox.id, imageContentSize, imageContentOffset) {
+                    mutableStateOf(IntSize.Zero)
+                }
+                var localOffset by remember(textBox.id, imageContentSize, imageContentOffset) {
+                    mutableStateOf(textBox.relativePosition.toOffset(imageContentSize, imageContentOffset))
+                }
 
                 Box(
                     modifier = Modifier
                         .offset {
                             IntOffset(x = localOffset.x.roundToInt(), y = localOffset.y.roundToInt())
                         }
-                        .pointerInput(textBox.id) {
+                        .pointerInput(textBox.id, imageContentSize, imageContentOffset) {
                             detectTapGestures(
                                 onTap = {
                                     onTextBoxClick(MemeEvent.EditorEvent.SelectTextBox(textBox.id))
@@ -206,7 +278,7 @@ fun MemeImage(
                                 }
                             )
                         }
-                        .pointerInput(textBox.id) {
+                        .pointerInput(textBox.id, imageContentSize, imageContentOffset) {
                             detectDragGestures(
                                 onDrag = { _, dragAmount ->
                                     val original = localOffset
@@ -226,7 +298,18 @@ fun MemeImage(
                                     localOffset = newValue
                                 },
                                 onDragEnd = {
-                                    onPositionUpdate(MemeEvent.EditorEvent.PositionUpdate(textBox.id, localOffset))
+                                    // Calculate relative position
+                                    val relativePosition = localOffset.toRelativePosition(
+                                        size = imageContentSize,
+                                        contentOffset = imageContentOffset
+                                    )
+                                    onPositionUpdate(
+                                        MemeEvent.EditorEvent.PositionUpdate(
+                                            id = textBox.id,
+                                            offset = localOffset,
+                                            relativePosition = relativePosition
+                                        )
+                                    )
                                 }
                             )
                         }

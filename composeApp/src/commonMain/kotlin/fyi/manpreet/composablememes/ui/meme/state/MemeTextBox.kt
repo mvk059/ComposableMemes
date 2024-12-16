@@ -7,8 +7,15 @@ data class MemeTextBox(
     val id: Long,
     val text: String,
     val offset: Offset,
+    val relativePosition: RelativePosition,
     val isSelected: Boolean,
     val isEditable: Boolean,
     val textStyle: TextStyle = TextStyle(),
     val fontFamilyType: FontFamilyType,
-)
+) {
+
+    data class RelativePosition(
+        val percentX: Float,
+        val percentY: Float
+    )
+}

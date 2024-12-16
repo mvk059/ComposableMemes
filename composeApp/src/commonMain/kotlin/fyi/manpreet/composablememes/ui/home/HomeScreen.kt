@@ -100,17 +100,17 @@ fun HomeScreen(
                 }
             )
         }
-    ) {
+    ) { innerPadding ->
 
         if (homeState.memes.isEmpty()) {
             HomeScreenEmpty()
             return@Scaffold
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
 
             LazyVerticalGrid(
-                modifier = modifier.padding(top = MaterialTheme.spacing.large3XL),
+                modifier = modifier,
                 columns = GridCells.Fixed(2),
             ) {
 
@@ -145,6 +145,16 @@ fun HomeScreen(
                 }
             }
 
+            // Shadow on top of the screen
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(height = MaterialTheme.spacing.medium)
+                    .align(alignment = Alignment.TopCenter)
+                    .background(brush = MaterialTheme.gradient.topScreenShadow)
+            )
+
+            // Shadow at the bottom of the screen
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

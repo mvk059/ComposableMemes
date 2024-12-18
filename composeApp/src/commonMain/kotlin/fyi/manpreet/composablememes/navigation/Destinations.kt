@@ -6,4 +6,9 @@ import kotlinx.serialization.Serializable
 object HomeDestination
 
 @Serializable
-data class MemeDestination(val memeName: String)
+data class MemeDestination(
+    val memeName: String,
+    val memePath: String,
+    val width: Int,
+    val height: Int,
+)

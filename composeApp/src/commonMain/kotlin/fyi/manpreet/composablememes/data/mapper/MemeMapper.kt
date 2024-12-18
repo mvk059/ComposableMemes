@@ -4,9 +4,8 @@ import fyi.manpreet.composablememes.data.database.MemeTable
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.model.MemeImageName
 import fyi.manpreet.composablememes.data.model.MemeImagePath
-import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
+import fyi.manpreet.composablememes.data.model.MemeResponse
 import kotlinx.datetime.Clock
-import org.jetbrains.compose.resources.DrawableResource
 
 fun Meme.toMemeTable(): MemeTable {
     val path = this.path
@@ -40,14 +39,16 @@ fun List<MemeTable>.toMeme(): List<Meme> {
     }
 }
 
-fun Map<String, DrawableResource>.toMemeListBottomSheet(): MemeListBottomSheet {
-    val memeList = this.map { (key, _) ->
+fun MemeResponse.toMeme(): List<Meme> {
+    return this.data.memes.map { meme ->
         Meme(
-            imageName = MemeImageName(key),
-            path = MemeImagePath(key),
+            id = meme.id.toLong(),
+            imageName = MemeImageName(meme.name),
+            path = MemeImagePath(meme.url),
             isFavorite = false,
             isSelected = false,
+            width = meme.width,
+            height = meme.height,
         )
     }
-    return MemeListBottomSheet(memes = memeList)
 }

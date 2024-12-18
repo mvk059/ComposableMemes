@@ -33,6 +33,8 @@ sealed interface MemeEvent {
         ) : EditorEvent
 
         data class EditorSize(val editorSize: IntSize, val imageSize: Size, val imageOffset: Offset) : EditorEvent
+        data object Undo : EditorEvent
+        data object Redo : EditorEvent
     }
 
     sealed interface EditorOptionsBottomBarEvent : MemeEvent {

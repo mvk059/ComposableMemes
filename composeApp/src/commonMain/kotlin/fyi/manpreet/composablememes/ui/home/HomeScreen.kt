@@ -103,7 +103,7 @@ fun HomeScreen(
     ) { innerPadding ->
 
         if (homeState.memes.isEmpty()) {
-            HomeScreenEmpty()
+            HomeScreenEmpty(modifier = Modifier.padding(innerPadding))
             return@Scaffold
         }
 

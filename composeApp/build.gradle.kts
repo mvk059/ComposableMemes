@@ -41,6 +41,8 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
 
+            implementation(libs.ktor.client.android)
+
             implementation(libs.androidx.core.splashscreen)
         }
         commonMain.dependencies {
@@ -70,10 +72,13 @@ kotlin {
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
 
+            implementation(libs.bundles.ktor.common)
+
             implementation(libs.kermit)
             implementation(libs.composables.core)
             implementation(libs.skiko)
             implementation(libs.coil)
+            implementation(libs.coil.ktor)
 
             implementation(project.dependencies.platform(libs.arrow.bom))
             implementation(libs.arrow.core)
@@ -85,6 +90,9 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.kotest.assertions.core)
             implementation(libs.turbine)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
     }
 }

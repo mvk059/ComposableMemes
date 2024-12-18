@@ -13,17 +13,18 @@ data class MemeState(
         imageContentSize = Size.Zero,
         imageContentOffset = Offset.Zero,
         options = emptyList(),
-        selectedOption = MemeEvent.EditorOptionsBottomBarEvent.Font
+        isUndoEnabled = false,
+        isRedoEnabled = false,
+        selectedOption = MemeEvent.EditorOptionsBottomBarEvent.Font,
     ),
-    val editorSelectionOptions: MemeEditorSelectionOptions = MemeEditorSelectionOptions(
-        font = MemeEditorSelectionOptions.Fonts(
-            fonts = emptyList(),
-            example = ""
-        ),
-        fontSize = 0.5f,
-        fontColors = emptyList()
-    ),
+    val editorSelectionOptions: MemeEditorSelectionOptions = MemeEditorSelectionOptions.init(),
     val shareOptions: List<ShareOption> = emptyList(),
     val isBackDialogVisible: Boolean = false,
     val shouldShowEditOptions: Boolean = false,
+)
+
+fun MemeState.resetStateWhileKeepEditorSame(): MemeState = copy(
+    textBoxes = emptyList(),
+    editorSelectionOptions = editorSelectionOptions.clearAllSelections(),
+    shouldShowEditOptions = false,
 )

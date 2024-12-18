@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -45,6 +44,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -260,13 +260,21 @@ fun MemeImage(
                     mutableStateOf(IntSize.Zero)
                 }
                 var localOffset by remember(textBox.id, imageContentSize, imageContentOffset) {
-                    mutableStateOf(textBox.relativePosition.toOffset(imageContentSize, imageContentOffset))
+                    mutableStateOf(
+                        textBox.relativePosition.toOffset(
+                            size = imageContentSize,
+                            contentOffset = imageContentOffset
+                        )
+                    )
                 }
 
                 Box(
                     modifier = Modifier
                         .offset {
-                            IntOffset(x = localOffset.x.roundToInt(), y = localOffset.y.roundToInt())
+                            IntOffset(
+                                x = localOffset.x.roundToInt(),
+                                y = localOffset.y.roundToInt()
+                            )
                         }
                         .pointerInput(textBox.id, imageContentSize, imageContentOffset) {
                             detectTapGestures(
@@ -318,7 +326,6 @@ fun MemeImage(
                         textBox = textBox,
                         onTextBoxTextChange = onTextBoxTextChange,
                         onTextBoxCloseClick = onTextBoxCloseClick,
-                        onDeselectClick = onDeselectClick,
                         onSizeChange = { contentSize = it }
                     )
                 }
@@ -333,12 +340,17 @@ private fun Content(
     textBox: MemeTextBox,
     onTextBoxTextChange: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxCloseClick: (MemeEvent.EditorEvent) -> Unit,
-    onDeselectClick: (MemeEvent.EditorEvent) -> Unit,
     onSizeChange: (IntSize) -> Unit,
 ) {
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    var textFieldValue by remember(textBox.id) {
+        mutableStateOf(
+            TextFieldValue(text = textBox.text, selection = TextRange(textBox.text.length))
+        )
+    }
+    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     LaunchedEffect(textBox.isEditable) {
         if (textBox.isEditable) {
@@ -347,69 +359,44 @@ private fun Content(
         }
     }
 
+    // Reset layout result when text changes
+    LaunchedEffect(textBox.text) {
+        textLayoutResult = null
+    }
+
     Box(
         modifier = modifier
-            .then(
-                if (textBox.isSelected) Modifier.border(1.dp, Color.White)
-                else Modifier
-            )
-            .onGloballyPositioned {
-                onSizeChange(it.size)
-            }
+            .then(if (textBox.isSelected) Modifier.border(1.dp, Color.White) else Modifier)
+            .onGloballyPositioned { onSizeChange(it.size) }
     ) {
 
         // Keep this text field before the next text field to keep the stroke behind the actual text
-        BasicTextField(
-            value = TextFieldValue(text = textBox.text),
-            onValueChange = {},
+        StrokedTextField(
             modifier = Modifier
                 .width(IntrinsicSize.Min)
                 .height(IntrinsicSize.Min)
                 .padding(MaterialTheme.spacing.extraSmall),
-            enabled = false,
-            readOnly = true,
-            textStyle = TextStyle.Default.copy(
-                fontFamily = textBox.fontFamilyType.toFontFamily(),
-                fontSize = textBox.textStyle.fontSize,
-                color = Color.Black,
-                drawStyle = Stroke(
-                    miter = 5f,
-                    width = 5f,
-                    join = StrokeJoin.Round,
-                ),
-            )
+            value = textFieldValue,
+            textBox = textBox
         )
 
-        BasicTextField(
-            value = TextFieldValue(text = textBox.text, selection = TextRange(textBox.text.length)),
-            onValueChange = { onTextBoxTextChange(MemeEvent.EditorEvent.UpdateTextBox(it.text)) },
+        // Main text field
+        EditableTextField(
             modifier = Modifier
                 .width(IntrinsicSize.Min)
                 .height(IntrinsicSize.Min)
                 .padding(MaterialTheme.spacing.extraSmall)
                 .focusRequester(focusRequester),
-            enabled = textBox.isEditable,
-            textStyle = textBox.textStyle.copy(
-                fontFamily = textBox.fontFamilyType.toFontFamily(),
-            ),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Default
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    keyboardController?.hide()
-                    onDeselectClick(
-                        MemeEvent.EditorEvent.DeselectTextBox(
-                            id = textBox.id,
-                            isSelected = true,
-                            isEditable = false
-                        )
-                    )
-                }
-            ),
-            singleLine = false,
-            cursorBrush = SolidColor(MaterialTheme.fixedAccentColors.secondaryFixedDim),
+            value = textFieldValue,
+            onValueChange = {
+                textFieldValue = it
+                onTextBoxTextChange(
+                    MemeEvent.EditorEvent.UpdateTextBox(text = it.text, selection = it.selection)
+                )
+            },
+            textBox = textBox,
+            textLayoutResult = textLayoutResult,
+            onTextLayoutResult = { textLayoutResult = it }
         )
 
         if (textBox.isSelected) {
@@ -419,7 +406,6 @@ private fun Content(
                     .offset(x = 12.dp, y = (-12).dp)
                     .background(color = MaterialTheme.colorScheme.error, shape = CircleShape)
                     .clickable {
-                        println("TextBox Close Clicked: $textBox")
                         onTextBoxCloseClick(MemeEvent.EditorEvent.RemoveTextBox(textBox.id))
                     },
                 imageVector = Icons.Default.Close,
@@ -428,4 +414,67 @@ private fun Content(
             )
         }
     }
+}
+
+@Composable
+fun StrokedTextField(
+    modifier: Modifier = Modifier,
+    value: TextFieldValue,
+    textBox: MemeTextBox,
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = {},
+        modifier = modifier,
+        enabled = false,
+        readOnly = true,
+        textStyle = TextStyle.Default.copy(
+            fontFamily = textBox.fontFamilyType.toFontFamily(),
+            fontSize = textBox.textStyle.fontSize,
+            color = Color.Black,
+            drawStyle = Stroke(
+                miter = 5f,
+                width = 5f,
+                join = StrokeJoin.Round,
+            ),
+        )
+    )
+}
+
+@Composable
+private fun EditableTextField(
+    modifier: Modifier = Modifier,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    textBox: MemeTextBox,
+    textLayoutResult: TextLayoutResult?,
+    onTextLayoutResult: (TextLayoutResult) -> Unit,
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val position = awaitPointerEvent().changes.first().position
+                        textLayoutResult?.let { layout ->
+                            val offset = layout.getOffsetForPosition(position)
+                            onValueChange(value.copy(selection = TextRange(offset)))
+                        }
+                    }
+                }
+            },
+        enabled = textBox.isEditable,
+        textStyle = textBox.textStyle.copy(
+            fontFamily = textBox.fontFamilyType.toFontFamily(),
+        ),
+        onTextLayout = { onTextLayoutResult(it) },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Default
+        ),
+        singleLine = false,
+        cursorBrush = SolidColor(MaterialTheme.fixedAccentColors.secondaryFixedDim),
+    )
 }

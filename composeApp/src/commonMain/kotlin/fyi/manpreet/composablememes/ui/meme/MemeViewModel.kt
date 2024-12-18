@@ -7,6 +7,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
@@ -194,7 +195,7 @@ class MemeViewModel(
 
             MemeEvent.EditorEvent.AddTextBox -> addTextBox()
             is MemeEvent.EditorEvent.RemoveTextBox -> removeTextBox(event.id)
-            is MemeEvent.EditorEvent.UpdateTextBox -> updateTextBox(event.text)
+            is MemeEvent.EditorEvent.UpdateTextBox -> updateTextBox(event.text, event.selection)
             is MemeEvent.EditorEvent.DeselectTextBox -> deselectTextBox(
                 id = event.id,
                 selected = event.isSelected,
@@ -265,6 +266,7 @@ class MemeViewModel(
         val newTextBox = MemeTextBox(
             id = id,
             text = text,
+            textSelection = TextRange(text.length),
             offset = editorSize.middle() + contentOffset,
             relativePosition = editorSize.relativeMiddle(),
             isSelected = true,
@@ -303,13 +305,16 @@ class MemeViewModel(
         updateState(_memeState.value)
     }
 
-    private fun updateTextBox(text: String) {
+    private fun updateTextBox(text: String, selection: TextRange) {
         val selectedTextBox = _memeState.value.textBoxes.find { it.isSelected } ?: return
 
         _memeState.update {
             it.copy(
                 textBoxes = it.textBoxes.map { box ->
-                    if (box.id == selectedTextBox.id) box.copy(text = text)
+                    if (box.id == selectedTextBox.id) box.copy(
+                        text = text,
+                        textSelection = selection
+                    )
                     else box
                 }
             )

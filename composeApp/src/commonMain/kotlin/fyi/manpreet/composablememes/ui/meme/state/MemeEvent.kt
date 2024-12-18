@@ -3,6 +3,7 @@ package fyi.manpreet.composablememes.ui.meme.state
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.IntSize
 
 sealed interface MemeEvent {
@@ -16,7 +17,7 @@ sealed interface MemeEvent {
     sealed interface EditorEvent : MemeEvent {
         data object AddTextBox : EditorEvent
         data class RemoveTextBox(val id: Long) : EditorEvent
-        data class UpdateTextBox(val text: String) : EditorEvent
+        data class UpdateTextBox(val text: String, val selection: TextRange) : EditorEvent
         data class SelectTextBox(val id: Long) : EditorEvent
         data class EditTextBox(val id: Long) : EditorEvent
         data class DeselectTextBox(

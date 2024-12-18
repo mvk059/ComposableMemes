@@ -1,12 +1,14 @@
 package fyi.manpreet.composablememes.data.repository
 
 import fyi.manpreet.composablememes.data.datasource.MemeLocalDataSource
+import fyi.manpreet.composablememes.data.datasource.MemeRemoteDataSource
 import fyi.manpreet.composablememes.data.mapper.toMeme
 import fyi.manpreet.composablememes.data.mapper.toMemeTable
 import fyi.manpreet.composablememes.data.model.Meme
 
 class MemeRepositoryImpl(
     private val localDataSource: MemeLocalDataSource,
+    private val remoteDataSource: MemeRemoteDataSource,
 ) : MemeRepository {
 
     override suspend fun insertMeme(meme: Meme) {
@@ -29,4 +31,7 @@ class MemeRepositoryImpl(
     override suspend fun updateMeme(meme: Meme) {
         localDataSource.updateMeme(meme.toMemeTable())
     }
+
+    override suspend fun getAllMemes(): List<Meme> =
+        remoteDataSource.getAllMemes().toMeme()
 }

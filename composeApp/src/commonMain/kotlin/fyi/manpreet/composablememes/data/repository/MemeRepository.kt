@@ -16,4 +16,5 @@ interface MemeRepository {
 
     suspend fun deleteMemes(memes: List<Meme>)
 
+    suspend fun getAllMemes(): List<Meme>
 }

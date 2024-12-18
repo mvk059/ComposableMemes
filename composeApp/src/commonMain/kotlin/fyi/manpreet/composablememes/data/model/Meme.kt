@@ -8,11 +8,12 @@ data class Meme(
     val path: MemeImagePath? = null,
     val isFavorite: Boolean = false,
     val isSelected: Boolean = false,
+    val width: Int = 0,
+    val height: Int = 0,
 ) {
 
     fun checkImageNameCombinations(searchValue: String): Boolean {
-        val name = imageName.value.substring(0, imageName.value.lastIndexOf("_"))
-        return name.contains(searchValue, ignoreCase = true)
+        return imageName.value.contains(searchValue, ignoreCase = true)
     }
 
     companion object {

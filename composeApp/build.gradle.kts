@@ -78,6 +78,14 @@ kotlin {
             implementation(project.dependencies.platform(libs.arrow.bom))
             implementation(libs.arrow.core)
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(kotlin("test-common"))
+            implementation(kotlin("test-annotations-common"))
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.kotest.assertions.core)
+            implementation(libs.turbine)
+        }
     }
 }
 
@@ -118,4 +126,8 @@ dependencies {
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

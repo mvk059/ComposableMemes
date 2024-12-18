@@ -26,6 +26,7 @@ data class Spacing(
     val listItemHeight: Dp = 176.dp,
 
     val sortFilterSize: Dp = 120.dp,
+    val loaderSize: Dp = 50.dp,
 
     val bottomBarSize: Dp = 80.dp,
     val bottomBarGapSize: Dp = 100.dp,

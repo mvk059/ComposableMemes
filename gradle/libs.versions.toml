@@ -39,6 +39,8 @@ androidx-lifecycle = "2.8.3"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 junit = "4.13.2"
+kotest = "5.8.0"
+turbine = "1.0.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -90,6 +92,9 @@ composables-core = { module = "com.composables:core", version.ref = "composables
 skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 material-icons = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icon" }
+
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

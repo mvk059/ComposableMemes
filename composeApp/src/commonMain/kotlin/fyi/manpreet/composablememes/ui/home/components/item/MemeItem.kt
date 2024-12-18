@@ -1,6 +1,5 @@
 package fyi.manpreet.composablememes.ui.home.components.item
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -23,24 +22,19 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import composablememes.composeapp.generated.resources.Res
-import composablememes.composeapp.generated.resources.allDrawableResources
 import fyi.manpreet.composablememes.data.model.Meme
+import fyi.manpreet.composablememes.ui.home.components.loader.ShimmerBrush
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 import fyi.manpreet.composablememes.ui.icon.CircleIcon
 import fyi.manpreet.composablememes.ui.theme.gradient
 import fyi.manpreet.composablememes.ui.theme.spacing
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun MemeItem(
     modifier: Modifier = Modifier,
     meme: Meme,
     shouldShowFavorite: Boolean = false,
     shouldShowSelection: Boolean = false,
-    isBottomSheetList: Boolean = false,
     onFavoriteClick: (HomeEvent.MemeListEvent) -> Unit = {},
     onSelectClick: (HomeEvent.MemeListEvent) -> Unit = {},
 ) {
@@ -54,25 +48,17 @@ fun MemeItem(
             .padding(MaterialTheme.spacing.small)
     ) {
 
-        if (isBottomSheetList) {
-            val imagePath = Res.allDrawableResources[meme.path?.value] ?: return
-            Image(
-                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(MaterialTheme.spacing.small)),
-                painter = painterResource(imagePath),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds
-            )
-        } else {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalPlatformContext.current)
-                    .data(meme.path?.value)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(MaterialTheme.spacing.small)),
-                contentScale = ContentScale.Crop,
-            )
-        }
+        AsyncImage(
+            model = ImageRequest.Builder(LocalPlatformContext.current)
+                .data(meme.path?.value)
+                .crossfade(true)
+                .build(),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize()
+                .clip(RoundedCornerShape(MaterialTheme.spacing.small)),
+            contentScale = ContentScale.Crop,
+            placeholder = ShimmerBrush(),
+        )
 
         if (shouldShowFavorite) {
             Box(

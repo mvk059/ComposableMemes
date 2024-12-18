@@ -3,9 +3,6 @@ package fyi.manpreet.composablememes.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.raise.either
-import composablememes.composeapp.generated.resources.Res
-import composablememes.composeapp.generated.resources.allDrawableResources
-import fyi.manpreet.composablememes.data.mapper.toMemeListBottomSheet
 import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.platform.filemanager.FileManager
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
@@ -14,9 +11,14 @@ import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
 import fyi.manpreet.composablememes.usecase.SaveImageUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 class HomeViewModel(
     private val repository: MemeRepository,
@@ -36,7 +38,8 @@ class HomeViewModel(
     private val _searchTextBottomSheet = MutableStateFlow("")
     private val searchTextBottomSheet = _searchTextBottomSheet.asStateFlow()
 
-    private val _allMemesList = MutableStateFlow(MemeListBottomSheet())
+    private val _allMemesList =
+        MutableStateFlow(MemeListBottomSheet(isLoading = true)).apply { loadAllMemes() }
     val allMemesList = combine(
         searchTextBottomSheet,
         _allMemesList
@@ -50,6 +53,7 @@ class HomeViewModel(
             memes.copy(
                 memes = filteredMemes,
                 searchText = _searchTextBottomSheet.value,
+                isLoading = memes.isLoading
             )
         }
     }
@@ -85,13 +89,20 @@ class HomeViewModel(
         }
     }
 
-    @OptIn(ExperimentalResourceApi::class)
+    private fun MutableStateFlow<MemeListBottomSheet>.loadAllMemes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val memes = repository.getAllMemes()
+                emit(MemeListBottomSheet(memes = memes, isLoading = false))
+            } catch (e: Exception) {
+                // Handle error
+                emit(value.copy(isLoading = false))
+            }
+        }
+    }
+
     private fun onFabClick() {
         onCancel()
-        val allMemes = Res.allDrawableResources
-            .filter { it.key.endsWith("Meme") }
-            .toMemeListBottomSheet()
-        _allMemesList.update { allMemes }
         resetSearchText()
     }
 

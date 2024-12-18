@@ -172,6 +172,7 @@ fun HomeScreen(
             onMemeSelectBottomSheet(it)
             dismissBottomSheet()
         },
+        isLoading = memeListBottomSheet.isLoading,
         searchMode = memeListBottomSheet.isSearchMode,
         toggleSearchMode = toggleSearchModeBottomSheet,
         searchText = memeListBottomSheet.searchText,

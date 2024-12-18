@@ -9,5 +9,6 @@ data class MemeListBottomSheet(
     val memes: List<Meme> = emptyList(),
     val searchText: String = "",
     val isSearchMode: Boolean = false,
+    val isLoading: Boolean = false,
     val placeholder: StringResource = Res.string.home_bottom_sheet_input_placeholder,
 )

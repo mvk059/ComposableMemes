@@ -29,6 +29,7 @@ import com.composables.core.Scrim
 import com.composables.core.Sheet
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.home.components.item.MemeItem
+import fyi.manpreet.composablememes.ui.home.components.loader.Loader
 import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 import fyi.manpreet.composablememes.ui.theme.spacing
 import org.jetbrains.compose.resources.StringResource
@@ -38,6 +39,7 @@ fun MemeListBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: ModalBottomSheetState,
     memeList: List<Meme>,
+    isLoading: Boolean,
     onMemeSelected: (HomeEvent.BottomSheetEvent.OnMemeSelect) -> Unit,
     searchMode: Boolean,
     toggleSearchMode: (HomeEvent.BottomSheetEvent) -> Unit,
@@ -84,6 +86,11 @@ fun MemeListBottomSheet(
                             .height(MaterialTheme.spacing.extraSmall)
                     )
 
+                    if (isLoading) {
+                        Loader()
+                        return@Box
+                    }
+
                     MemeListBottomSheetTopBar(
                         searchMode = searchMode,
                         toggleSearchMode = toggleSearchMode,
@@ -125,7 +132,6 @@ private fun ListContent(
                     onMemeSelected(HomeEvent.BottomSheetEvent.OnMemeSelect(meme))
                 },
                 meme = meme,
-                isBottomSheetList = true,
             )
         }
 

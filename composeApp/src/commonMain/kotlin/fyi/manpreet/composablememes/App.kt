@@ -7,11 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import fyi.manpreet.composablememes.data.model.MemeImageName
 import fyi.manpreet.composablememes.navigation.HomeDestination
 import fyi.manpreet.composablememes.navigation.MemeDestination
-import fyi.manpreet.composablememes.ui.home.HomeViewModel
 import fyi.manpreet.composablememes.ui.home.HomeScreen
+import fyi.manpreet.composablememes.ui.home.HomeViewModel
 import fyi.manpreet.composablememes.ui.meme.MemeScreen
 import fyi.manpreet.composablememes.ui.theme.MemeTheme
 import fyi.manpreet.composablememes.util.MemeConstants
@@ -45,7 +44,14 @@ fun App(
                     onSearchTextChangeBottomSheet = viewModel::onEvent,
                     onMemeSelectBottomSheet = {
                         viewModel.onEvent(it)
-                        navController.navigate(MemeDestination(it.meme.imageName.value))
+                        navController.navigate(
+                            MemeDestination(
+                                memeName = it.meme.imageName.value,
+                                memePath = it.meme.path?.value ?: "",
+                                width = it.meme.width,
+                                height = it.meme.height
+                            )
+                        )
                     },
                     onFavoriteClick = viewModel::onEvent,
                     onSelectClick = viewModel::onEvent,
@@ -63,9 +69,12 @@ fun App(
             composable<MemeDestination> {
                 val args = it.toRoute<MemeDestination>()
                 MemeScreen(
-                    memeName = MemeImageName( args.memeName),
+                    memeName = args,
                     navigateBack = {
-                        navController.previousBackStackEntry?.savedStateHandle?.set(MemeConstants.NAVIGATE_BACK_RELOAD, true)
+                        navController.previousBackStackEntry?.savedStateHandle?.set(
+                            key = MemeConstants.NAVIGATE_BACK_RELOAD,
+                            value = true
+                        )
                         navController.popBackStack()
                     },
                 )

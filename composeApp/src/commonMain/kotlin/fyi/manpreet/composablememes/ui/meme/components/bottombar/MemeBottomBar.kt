@@ -9,7 +9,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalRippleConfiguration
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -18,7 +25,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import composablememes.composeapp.generated.resources.*
+import composablememes.composeapp.generated.resources.Res
+import composablememes.composeapp.generated.resources.ic_redo
+import composablememes.composeapp.generated.resources.ic_undo
+import composablememes.composeapp.generated.resources.meme_bottom_bar_add_text
+import composablememes.composeapp.generated.resources.meme_bottom_bar_redo_cd
+import composablememes.composeapp.generated.resources.meme_bottom_bar_save_meme
+import composablememes.composeapp.generated.resources.meme_bottom_bar_undo_cd
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.theme.fixedAccentColors
 import fyi.manpreet.composablememes.ui.theme.gradient
@@ -30,8 +43,12 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun MemeBottomBar(
     modifier: Modifier = Modifier,
+    canUndo: Boolean,
+    canRedo: Boolean,
     onAddText: (MemeEvent.EditorEvent) -> Unit,
     onSaveImage: () -> Unit,
+    onUndo: (MemeEvent.EditorEvent) -> Unit,
+    onRedo: (MemeEvent.EditorEvent) -> Unit,
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -49,17 +66,29 @@ fun MemeBottomBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
 
-        IconButton(onClick = {}) {
+        IconButton(
+            enabled = canUndo,
+            onClick = { onUndo(MemeEvent.EditorEvent.Undo) }
+        ) {
             Icon(
                 painter = painterResource(Res.drawable.ic_undo),
-                contentDescription = stringResource(Res.string.meme_bottom_bar_undo_cd)
+                contentDescription = stringResource(Res.string.meme_bottom_bar_undo_cd),
+                tint =
+                if (canUndo) MaterialTheme.fixedAccentColors.secondaryFixedDim
+                else MaterialTheme.colorScheme.background
             )
         }
 
-        IconButton(onClick = {}) {
+        IconButton(
+            enabled = canRedo,
+            onClick = { onRedo(MemeEvent.EditorEvent.Redo) }
+        ) {
             Icon(
                 painterResource(resource = Res.drawable.ic_redo),
-                contentDescription = stringResource(Res.string.meme_bottom_bar_redo_cd)
+                contentDescription = stringResource(Res.string.meme_bottom_bar_redo_cd),
+                tint =
+                if (canRedo) MaterialTheme.fixedAccentColors.secondaryFixedDim
+                else MaterialTheme.colorScheme.background
             )
         }
 

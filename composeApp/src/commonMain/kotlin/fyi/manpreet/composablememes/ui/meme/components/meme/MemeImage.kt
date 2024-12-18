@@ -1,6 +1,5 @@
 package fyi.manpreet.composablememes.ui.meme.components.meme
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -53,8 +52,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import composablememes.composeapp.generated.resources.Res
-import composablememes.composeapp.generated.resources.allDrawableResources
+import coil3.compose.AsyncImage
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.meme.mapper.toFontFamily
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
@@ -64,9 +62,7 @@ import fyi.manpreet.composablememes.ui.theme.spacing
 import fyi.manpreet.composablememes.util.noRippleClickable
 import fyi.manpreet.composablememes.util.toOffset
 import fyi.manpreet.composablememes.util.toRelativePosition
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
 
 /**
@@ -184,9 +180,6 @@ fun MemeImage(
     onEditorSizeUpdate: (MemeEvent.EditorEvent) -> Unit,
 ) {
 
-    val image: DrawableResource = Res.allDrawableResources[meme.imageName.value] ?: return
-    val painter = painterResource(image)
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -202,7 +195,7 @@ fun MemeImage(
     ) {
 
         Box {
-            Image(
+            AsyncImage(
                 modifier = Modifier
                     .fillMaxSize()
                     .onGloballyPositioned { coordinates ->
@@ -212,8 +205,8 @@ fun MemeImage(
                         val actualHeight: Float
                         val offsetX: Float
                         val offsetY: Float
-                        val imageWidth = painter.intrinsicSize.width
-                        val imageHeight = painter.intrinsicSize.height
+                        val imageWidth = meme.width.toFloat()
+                        val imageHeight = meme.height.toFloat()
 
                         //  // Calculate aspect ratios
                         val imageAspectRatio = imageWidth / imageHeight
@@ -243,7 +236,7 @@ fun MemeImage(
                             )
                         )
                     },
-                painter = painter,
+                model = meme.path?.value,
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
             )

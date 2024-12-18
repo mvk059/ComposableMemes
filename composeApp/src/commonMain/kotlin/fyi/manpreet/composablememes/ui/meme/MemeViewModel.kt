@@ -18,6 +18,8 @@ import composablememes.composeapp.generated.resources.ic_font_color
 import composablememes.composeapp.generated.resources.ic_font_size
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.model.MemeImageName
+import fyi.manpreet.composablememes.data.model.MemeImagePath
+import fyi.manpreet.composablememes.navigation.MemeDestination
 import fyi.manpreet.composablememes.ui.meme.mapper.SliderValue
 import fyi.manpreet.composablememes.ui.meme.mapper.sliderValueToFontSize
 import fyi.manpreet.composablememes.ui.meme.state.FontFamilyType
@@ -72,10 +74,15 @@ class MemeViewModel(
         }
     }
 
-    fun loadMeme(memeName: MemeImageName) {
+    fun loadMeme(meme: MemeDestination) {
         _memeState.update {
             it.copy(
-                meme = Meme(imageName = memeName),
+                meme = Meme(
+                    imageName = MemeImageName(meme.memeName),
+                    path = MemeImagePath(meme.memePath),
+                    width = meme.width,
+                    height = meme.height
+                ),
                 editorOptions = MemeEditorOptions(
                     editorSize = IntSize.Zero,
                     imageContentSize = Size.Zero,

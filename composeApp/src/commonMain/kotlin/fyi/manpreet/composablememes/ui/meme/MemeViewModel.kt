@@ -26,6 +26,8 @@ import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeState
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
 import fyi.manpreet.composablememes.ui.meme.state.ShareOption
+import fyi.manpreet.composablememes.ui.meme.state.resetStateWhileKeepEditorSame
+import fyi.manpreet.composablememes.usecase.HistoryUseCase
 import fyi.manpreet.composablememes.usecase.SaveImageUseCase
 import fyi.manpreet.composablememes.util.MemeConstants
 import fyi.manpreet.composablememes.util.middle
@@ -47,6 +49,8 @@ class MemeViewModel(
     private val _navigateBackStatus = MutableStateFlow(false)
     val navigateBackStatus = _navigateBackStatus.asStateFlow()
 
+    private val historyUseCase: HistoryUseCase<MemeState> = HistoryUseCase(10)
+
     init {
         viewModelScope.launch {
             saveImageUseCase.saveState.collectLatest { either ->
@@ -63,6 +67,7 @@ class MemeViewModel(
                     }
                 )
             }
+            historyUseCase.recordState(_memeState.value)
         }
     }
 
@@ -88,6 +93,8 @@ class MemeViewModel(
                             icon = Res.drawable.ic_font_color,
                         )
                     ),
+                    isUndoEnabled = false,
+                    isRedoEnabled = false,
                     selectedOption = MemeEvent.EditorOptionsBottomBarEvent.Font
                 ),
                 editorSelectionOptions = MemeEditorSelectionOptions(
@@ -197,12 +204,20 @@ class MemeViewModel(
             MemeEvent.EditorEvent.DeselectAllTextBox -> deselectAllTextBox()
             is MemeEvent.EditorEvent.SelectTextBox -> selectTextBox(event.id)
             is MemeEvent.EditorEvent.EditTextBox -> editTextBox(event.id)
-            is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(event.id, event.offset, event.relativePosition)
+            is MemeEvent.EditorEvent.PositionUpdate -> positionUpdate(
+                event.id,
+                event.offset,
+                event.relativePosition
+            )
+
             is MemeEvent.EditorEvent.EditorSize -> editorSizeUpdate(
                 size = event.editorSize,
                 imageSize = event.imageSize,
                 imageOffset = event.imageOffset
             )
+
+            MemeEvent.EditorEvent.Undo -> undo()
+            MemeEvent.EditorEvent.Redo -> redo()
 
             MemeEvent.EditorOptionsBottomBarEvent.Font -> onEditOptionsBottomBarFontSelection()
             MemeEvent.EditorOptionsBottomBarEvent.FontSize -> onEditOptionsBottomBarFontSizeSelection()
@@ -221,6 +236,10 @@ class MemeViewModel(
                 type = event.type
             )
         }
+    }
+
+    private fun updateState(newState: MemeState) {
+        historyUseCase.recordState(newState)
     }
 
     private fun onBackConfirmTopBar() {
@@ -259,6 +278,7 @@ class MemeViewModel(
         _memeState.update {
             it.copy(
                 textBoxes = it.textBoxes + newTextBox,
+                editorOptions = it.editorOptions.copy(isUndoEnabled = true),
                 editorSelectionOptions = it.editorSelectionOptions.copy(fontSize = fontSize),
                 shouldShowEditOptions = true,
             )
@@ -280,6 +300,7 @@ class MemeViewModel(
                 shouldShowEditOptions = false
             )
         }
+        updateState(_memeState.value)
     }
 
     private fun updateTextBox(text: String) {
@@ -333,13 +354,19 @@ class MemeViewModel(
 
     private fun deselectAllTextBox() {
         unselectAllTextBox()
+        updateState(_memeState.value)
     }
 
     private fun applyTextBoxStyle() {
         unselectAllTextBox()
+        updateState(_memeState.value)
     }
 
-    private fun positionUpdate(id: Long, offset: Offset, relativePosition: MemeTextBox.RelativePosition) {
+    private fun positionUpdate(
+        id: Long,
+        offset: Offset,
+        relativePosition: MemeTextBox.RelativePosition
+    ) {
         _memeState.update {
             it.copy(
                 textBoxes = it.textBoxes.map { box ->
@@ -358,6 +385,32 @@ class MemeViewModel(
                     imageContentSize = imageSize,
                     imageContentOffset = imageOffset
                 )
+            )
+        }
+    }
+
+    private fun undo() {
+        val state = historyUseCase.undo() ?: _memeState.value.resetStateWhileKeepEditorSame()
+        _memeState.update {
+            state.copy(
+                editorOptions = it.editorOptions.copy(
+                    isUndoEnabled = historyUseCase.canUndo(),
+                    isRedoEnabled = historyUseCase.canRedo()
+                ),
+                shouldShowEditOptions = false,
+            )
+        }
+    }
+
+    private fun redo() {
+        val state = historyUseCase.redo() ?: return
+        _memeState.update {
+            state.copy(
+                editorOptions = it.editorOptions.copy(
+                    isUndoEnabled = historyUseCase.canUndo(),
+                    isRedoEnabled = historyUseCase.canRedo()
+                ),
+                shouldShowEditOptions = false,
             )
         }
     }
@@ -385,15 +438,15 @@ class MemeViewModel(
     private fun unselectAllTextBox() {
         // Remove text boxes with no text
         val emptyTextBox = _memeState.value.textBoxes.filter { it.text.isEmpty() }
+        val allBox = _memeState.value.textBoxes.toMutableList()
         if (emptyTextBox.isNotEmpty()) {
-            val allBox = _memeState.value.textBoxes.toMutableList()
             allBox.removeAll(emptyTextBox)
         }
 
         // Unselect all text boxes
         _memeState.update {
             it.copy(
-                textBoxes = it.textBoxes.map { box ->
+                textBoxes = allBox.map { box ->
                     box.copy(isSelected = false, isEditable = false)
                 },
                 shouldShowEditOptions = false
@@ -459,7 +512,6 @@ class MemeViewModel(
                 }
             )
         }
-
     }
 
     private fun onFontColorChange(id: Long) {

@@ -46,6 +46,8 @@ fun MemeScreenContent(
     onTextBoxCloseClickEditor: (MemeEvent.EditorEvent) -> Unit,
     onTextBoxTextChangeEditor: (MemeEvent.EditorEvent) -> Unit,
     onDeselectClickEditor: (MemeEvent.EditorEvent) -> Unit,
+    onUndoEditor: (MemeEvent.EditorEvent) -> Unit,
+    onRedoEditor: (MemeEvent.EditorEvent) -> Unit,
     onEditorOptionsItemClickBottomBar: (MemeEvent.EditorOptionsBottomBarEvent) -> Unit,
     onFontItemSelectBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
     onFontSizeChangeBottomBar: (MemeEvent.EditorSelectionOptionsBottomBarEvent) -> Unit,
@@ -103,7 +105,11 @@ fun MemeScreenContent(
                 MemeBottomBar(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     onAddText = onAddTextBottomBar,
+                    canUndo = editorOptions.isUndoEnabled,
+                    canRedo = editorOptions.isRedoEnabled,
                     onSaveImage = { shareSheetState.currentDetent = SheetDetent.FullyExpanded },
+                    onUndo = onUndoEditor,
+                    onRedo = onRedoEditor,
                 )
             }
         }

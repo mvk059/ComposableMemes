@@ -10,6 +10,8 @@ data class MemeEditorOptions(
     var imageContentSize: Size,
     var imageContentOffset: Offset,
     val options: List<Options>,
+    val isUndoEnabled: Boolean,
+    val isRedoEnabled: Boolean,
     val selectedOption: MemeEvent.EditorOptionsBottomBarEvent
 ) {
     data class Options(

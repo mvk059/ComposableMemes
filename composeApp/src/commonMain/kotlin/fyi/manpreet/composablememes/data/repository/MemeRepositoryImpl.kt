@@ -3,7 +3,7 @@ package fyi.manpreet.composablememes.data.repository
 import fyi.manpreet.composablememes.data.datasource.MemeLocalDataSource
 import fyi.manpreet.composablememes.data.datasource.MemeRemoteDataSource
 import fyi.manpreet.composablememes.data.mapper.toMeme
-import fyi.manpreet.composablememes.data.mapper.toMemeTable
+import fyi.manpreet.composablememes.data.mapper.toMemeData
 import fyi.manpreet.composablememes.data.model.Meme
 
 class MemeRepositoryImpl(
@@ -12,7 +12,7 @@ class MemeRepositoryImpl(
 ) : MemeRepository {
 
     override suspend fun insertMeme(meme: Meme) {
-        localDataSource.insertMeme(meme.toMemeTable())
+        localDataSource.insertMeme(meme.toMemeData())
     }
 
     override suspend fun getMemeById(id: Long): Meme? =
@@ -25,11 +25,11 @@ class MemeRepositoryImpl(
         localDataSource.getMemesSortedByDate().toMeme()
 
     override suspend fun deleteMemes(memes: List<Meme>) {
-        localDataSource.deleteMemes(memes.toMemeTable())
+        localDataSource.deleteMemes(memes.toMemeData())
     }
 
     override suspend fun updateMeme(meme: Meme) {
-        localDataSource.updateMeme(meme.toMemeTable())
+        localDataSource.updateMeme(meme.toMemeData())
     }
 
     override suspend fun getAllMemes(): List<Meme> =

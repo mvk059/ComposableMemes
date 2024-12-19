@@ -1,17 +1,17 @@
 package fyi.manpreet.composablememes.data.mapper
 
-import fyi.manpreet.composablememes.data.database.MemeTable
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.model.MemeImageName
 import fyi.manpreet.composablememes.data.model.MemeImagePath
 import fyi.manpreet.composablememes.data.model.MemeResponse
+import fyi.manpreet.composablememes.data.model.MemeTable
 import kotlinx.datetime.Clock
 
-fun Meme.toMemeTable(): MemeTable {
+fun Meme.toMemeData(): MemeTable.MemeData {
     val path = this.path
     requireNotNull(path) { "Path cannot be null" }
 
-    return MemeTable(
+    return MemeTable.MemeData(
         id = id,
         imageUrl = imageName.value,
         createdDateInMillis = Clock.System.now().toEpochMilliseconds(),
@@ -20,10 +20,10 @@ fun Meme.toMemeTable(): MemeTable {
     )
 }
 
-fun List<Meme>.toMemeTable() =
-    map { meme -> meme.toMemeTable() }
+fun List<Meme>.toMemeData() =
+    map { meme -> meme.toMemeData() }
 
-fun MemeTable.toMeme(): Meme {
+fun MemeTable.MemeData.toMeme(): Meme {
     return Meme(
         id = id,
         imageName = MemeImageName(imageUrl),
@@ -33,7 +33,7 @@ fun MemeTable.toMeme(): Meme {
     )
 }
 
-fun List<MemeTable>.toMeme(): List<Meme> {
+fun List<MemeTable.MemeData>.toMeme(): List<Meme> {
     return this.map { memeTable ->
         memeTable.toMeme()
     }

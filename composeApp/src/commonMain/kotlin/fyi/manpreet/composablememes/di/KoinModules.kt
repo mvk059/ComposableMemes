@@ -6,6 +6,7 @@ import fyi.manpreet.composablememes.data.datasource.MemeRemoteDataSource
 import fyi.manpreet.composablememes.data.datasource.MemeRemoteDataSourceImpl
 import fyi.manpreet.composablememes.data.repository.MemeRepository
 import fyi.manpreet.composablememes.data.repository.MemeRepositoryImpl
+import fyi.manpreet.composablememes.platform.storage.StorageManager
 import fyi.manpreet.composablememes.ui.home.HomeViewModel
 import fyi.manpreet.composablememes.ui.meme.MemeViewModel
 import fyi.manpreet.composablememes.usecase.SaveImageUseCase
@@ -34,8 +35,10 @@ fun initKoin(config: KoinAppDeclaration? = null) =
             provideViewModelModule,
             provideUseCaseModule,
             provideNetworkModule,
-            provideDatabaseModule(),
+//            provideDatabaseModule(),
             provideFileManagerModule(),
+            provideStorageManager(),
+            provideStorageModule(),
         )
     }
 

@@ -8,4 +8,5 @@ object MemeConstants {
     const val DEFAULT_SLIDER_VALUE = 0.5f
     const val NAVIGATE_BACK_RELOAD = "Reload"
     const val TEMP_FILE_NAME = "temp_"
+    const val STORAGE_FILE_NAME = "/memes.json"
 }

@@ -13,14 +13,24 @@ actual class StorageManager {
     @OptIn(ExperimentalForeignApi::class)
     actual fun getStorageDir(): Path {
         val fileManager: NSFileManager = NSFileManager.defaultManager
-        val documentsUrl: NSURL = fileManager.URLForDirectory(
-            directory = NSDocumentDirectory,
-            appropriateForURL = null,
-            create = false,
-            inDomain = NSUserDomainMask,
-            error = null
-        ) ?: return Path("")
 
-        return Path("${documentsUrl.path}${MemeConstants.STORAGE_FILE_NAME}")
+        val documentDirectory = (fileManager.URLsForDirectory(
+            NSDocumentDirectory,
+            NSUserDomainMask
+        ).firstOrNull() as? NSURL)?.path ?: throw IllegalStateException("Could not get documents directory")
+
+        val dirPath = Path("$documentDirectory/${MemeConstants.STORAGE_FILE_NAME}")
+
+        // Ensure directory exists
+        if (!fileManager.fileExistsAtPath(documentDirectory)) {
+            fileManager.createDirectoryAtPath(
+                documentDirectory,
+                true,
+                null,
+                null
+            )
+        }
+
+        return dirPath
     }
 }

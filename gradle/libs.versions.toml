@@ -17,20 +17,16 @@ kotlinx-serialization = "1.7.3"
 kotlinx-dateTime = "0.6.1"
 
 koin-bom = "4.0.0"
-
-room = "2.7.0-alpha11"
 ksp = "2.0.21-1.0.25"
-sqlite = "2.5.0-alpha11"
-
 ktor = "3.0.2"
 
 kermit = "2.0.4"
-multiplatformSettings = "1.2.0"
 composables-core = "1.20.0"
 skiko = "0.8.18"
 coil = "3.0.4"
 material-icon = "1.7.1"
 arrow-bom = "1.2.4"
+kstore = "0.9.1"
 
 androidx-activityCompose = "1.9.3"
 androidx-appcompat = "1.7.0"
@@ -79,11 +75,6 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-dateTime" }
 
-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-room-runtime-android = { module = "androidx.room:room-runtime-android", version.ref = "room" }
-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
-
 arrow-bom = { module = "io.arrow-kt:arrow-stack", version.ref = "arrow-bom" }
 arrow-core = { module = "io.arrow-kt:arrow-core" }
 
@@ -96,8 +87,11 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 
+kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
+kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
+kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
+
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
-multiplatformSettings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 composables-core = { module = "com.composables:core", version.ref = "composables-core" }
 skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko" }

@@ -44,6 +44,7 @@ kotlin {
             implementation(libs.ktor.client.android)
 
             implementation(libs.androidx.core.splashscreen)
+            implementation(libs.kstore.file)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -69,9 +70,6 @@ kotlin {
             implementation(libs.koin.composeVM.navigation)
             implementation(libs.koin.test)
 
-            implementation(libs.room.runtime)
-            implementation(libs.sqlite.bundled)
-
             implementation(libs.bundles.ktor.common)
 
             implementation(libs.kermit)
@@ -82,6 +80,7 @@ kotlin {
 
             implementation(project.dependencies.platform(libs.arrow.bom))
             implementation(libs.arrow.core)
+            implementation(libs.kstore)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -93,6 +92,7 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.kstore.file)
         }
     }
 }
@@ -126,14 +126,6 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-    add("kspAndroid", libs.room.compiler)
-    add("kspIosSimulatorArm64", libs.room.compiler)
-    add("kspIosX64", libs.room.compiler)
-    add("kspIosArm64", libs.room.compiler)
-}
-
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 tasks.withType<Test> {

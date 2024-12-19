@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import arrow.core.Either
 import arrow.core.raise.either
+import arrow.core.raise.ensure
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.model.MemeImageName
 import fyi.manpreet.composablememes.data.repository.MemeRepository
@@ -76,12 +77,29 @@ class SaveImageUseCase(
         meme: Meme,
     ) {
 
-        val imageName = when (type) {
-            ShareOption.ShareType.SAVE -> MemeImageName("${meme.imageName}_${Clock.System.now().epochSeconds}.jpg")
-            ShareOption.ShareType.SHARE -> MemeImageName("${MemeConstants.TEMP_FILE_NAME}${meme.imageName}_${Clock.System.now().epochSeconds}.jpg")
+        var imageName = when (type) {
+            ShareOption.ShareType.SAVE -> MemeImageName("${meme.imageName.value}_${Clock.System.now().epochSeconds}.jpg")
+            ShareOption.ShareType.SHARE -> MemeImageName("${MemeConstants.TEMP_FILE_NAME}${meme.imageName.value}_${Clock.System.now().epochSeconds}.jpg")
         }
 
         either {
+            // Validate filename
+            val sanitizedName = with(imageName.value) {
+                // Check length (255 is common max length for many filesystems)
+                ensure(length <= 255) { "Filename too long: must be 255 characters or less" }
+
+                // Remove invalid characters and trim
+                replace("""[\\/:*?"<>|]""".toRegex(), "-")
+                    .trim()
+                    .also { sanitized ->
+                        // Ensure the filename isn't empty after sanitization
+                        ensure(sanitized.isNotEmpty()) { "Invalid filename: contains only special characters" }
+                    }
+            }
+
+            // Create new sanitized MemeImageName
+            imageName = MemeImageName(sanitizedName)
+
             with(fileManager) {
                 this@either.saveImage(imageBitmap, imageName)
             }

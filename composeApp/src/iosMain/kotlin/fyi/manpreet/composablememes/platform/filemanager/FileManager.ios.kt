@@ -61,10 +61,10 @@ actual class FileManager {
     actual suspend fun Raise<String>.saveImage(
         bitmap: ImageBitmap,
         fileName: MemeImageName
-    ): MemeImagePath? {
+    ): MemeImagePath {
         return withContext(Dispatchers.IO) {
             catch(
-                catch = { null },
+                catch = { raise(it.message ?: "Unknown error saving image") },
                 block = {
                     val fileManager = NSFileManager.defaultManager
                     val documentDirectory = (fileManager.URLsForDirectory(

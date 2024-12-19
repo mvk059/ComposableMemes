@@ -27,12 +27,14 @@ actual class FileManager(
     actual suspend fun Raise<String>.saveImage(
         bitmap: ImageBitmap,
         fileName: MemeImageName
-    ): MemeImagePath? {
+    ): MemeImagePath {
         return withContext(Dispatchers.IO) {
             val activity = mainActivityUseCase.requireActivity()
 
             catch(
-                catch = { null },
+                catch = {
+                    raise(it.message ?: "Unknown error saving image")
+                },
                 block = {
                     // Save the file
                     activity.openFileOutput(fileName.value, Context.MODE_PRIVATE)

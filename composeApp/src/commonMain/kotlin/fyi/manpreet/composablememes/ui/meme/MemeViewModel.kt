@@ -1,8 +1,5 @@
 package fyi.manpreet.composablememes.ui.meme
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.SimCardDownload
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -12,10 +9,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import composablememes.composeapp.generated.resources.Res
-import composablememes.composeapp.generated.resources.ic_font
-import composablememes.composeapp.generated.resources.ic_font_color
-import composablememes.composeapp.generated.resources.ic_font_size
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.model.MemeImageName
 import fyi.manpreet.composablememes.data.model.MemeImagePath
@@ -23,14 +16,13 @@ import fyi.manpreet.composablememes.navigation.MemeDestination
 import fyi.manpreet.composablememes.ui.meme.mapper.SliderValue
 import fyi.manpreet.composablememes.ui.meme.mapper.sliderValueToFontSize
 import fyi.manpreet.composablememes.ui.meme.state.FontFamilyType
-import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
-import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEvent
 import fyi.manpreet.composablememes.ui.meme.state.MemeState
 import fyi.manpreet.composablememes.ui.meme.state.MemeTextBox
 import fyi.manpreet.composablememes.ui.meme.state.ShareOption
 import fyi.manpreet.composablememes.ui.meme.state.resetStateWhileKeepEditorSame
 import fyi.manpreet.composablememes.usecase.HistoryUseCase
+import fyi.manpreet.composablememes.usecase.MemeEditorConfigUseCase
 import fyi.manpreet.composablememes.usecase.SaveImageUseCase
 import fyi.manpreet.composablememes.util.MemeConstants
 import fyi.manpreet.composablememes.util.middle
@@ -44,6 +36,7 @@ import kotlinx.datetime.Clock
 
 class MemeViewModel(
     private val saveImageUseCase: SaveImageUseCase,
+    private val memeEditorConfigUseCase: MemeEditorConfigUseCase,
 ) : ViewModel() {
 
     private val _memeState = MutableStateFlow(MemeState())
@@ -83,113 +76,10 @@ class MemeViewModel(
                     width = meme.width,
                     height = meme.height
                 ),
-                editorOptions = MemeEditorOptions(
-                    editorSize = IntSize.Zero,
-                    imageContentSize = Size.Zero,
-                    imageContentOffset = Offset.Zero,
-                    options = listOf(
-                        MemeEditorOptions.Options(
-                            type = MemeEvent.EditorOptionsBottomBarEvent.Font,
-                            icon = Res.drawable.ic_font,
-                        ),
-                        MemeEditorOptions.Options(
-                            type = MemeEvent.EditorOptionsBottomBarEvent.FontSize,
-                            icon = Res.drawable.ic_font_size,
-                        ),
-                        MemeEditorOptions.Options(
-                            type = MemeEvent.EditorOptionsBottomBarEvent.FontColor,
-                            icon = Res.drawable.ic_font_color,
-                        )
-                    ),
-                    isUndoEnabled = false,
-                    isRedoEnabled = false,
-                    selectedOption = MemeEvent.EditorOptionsBottomBarEvent.Font
-                ),
-                editorSelectionOptions = MemeEditorSelectionOptions(
-                    font = MemeEditorSelectionOptions.Fonts(
-                        example = "Good",
-                        fonts = listOf(
-                            MemeEditorSelectionOptions.Fonts.Font(
-                                id = FontFamilyType.AntonSC,
-                                name = "Anton SC",
-                            ),
-                            MemeEditorSelectionOptions.Fonts.Font(
-                                id = FontFamilyType.DancingScript,
-                                name = "Dancing Script",
-                            ),
-                            MemeEditorSelectionOptions.Fonts.Font(
-                                id = FontFamilyType.Jaro,
-                                name = "Jaro",
-                            ),
-                            MemeEditorSelectionOptions.Fonts.Font(
-                                id = FontFamilyType.Lobster,
-                                name = "Lobster",
-                            ),
-                            MemeEditorSelectionOptions.Fonts.Font(
-                                id = FontFamilyType.Manrope,
-                                name = "Manrope",
-                            ),
-                            MemeEditorSelectionOptions.Fonts.Font(
-                                id = FontFamilyType.OpenSans,
-                                name = "Open Sans",
-                            ),
-                            MemeEditorSelectionOptions.Fonts.Font(
-                                id = FontFamilyType.Roboto,
-                                name = "Roboto",
-                            ),
-                            MemeEditorSelectionOptions.Fonts.Font(
-                                id = FontFamilyType.RubrikDoodleShadow,
-                                name = "Rubrik Doodle Shadow",
-                            ),
-                        ),
-                    ),
-                    fontSize = MemeConstants.DEFAULT_SLIDER_VALUE,
-                    fontColors = listOf(
-                        MemeEditorSelectionOptions.FontColor(
-                            id = 1,
-                            color = Color.White,
-                        ),
-                        MemeEditorSelectionOptions.FontColor(
-                            id = 2,
-                            color = Color.Yellow,
-                        ),
-                        MemeEditorSelectionOptions.FontColor(
-                            id = 3,
-                            color = Color.Red,
-                        ),
-                        MemeEditorSelectionOptions.FontColor(
-                            id = 4,
-                            color = Color.Magenta,
-                        ),
-                        MemeEditorSelectionOptions.FontColor(
-                            id = 5,
-                            color = Color.Cyan,
-                        ),
-                        MemeEditorSelectionOptions.FontColor(
-                            id = 6,
-                            color = Color.Green,
-                        ),
-                        MemeEditorSelectionOptions.FontColor(
-                            id = 7,
-                            color = Color.Black,
-                        ),
-                    )
-                ),
-                shareOptions = listOf(
-                    ShareOption(
-                        title = "Save to device",
-                        subtitle = "Save created meme in the Files of your device",
-                        icon = Icons.Outlined.SimCardDownload,
-                        type = ShareOption.ShareType.SAVE,
-                    ),
-                    ShareOption(
-                        title = "Share the meme",
-                        subtitle = "Share your meme or open it in the other App",
-                        icon = Icons.Filled.Share,
-                        type = ShareOption.ShareType.SHARE,
-                    )
-                ),
-                shouldShowEditOptions = false
+                editorOptions = memeEditorConfigUseCase.provideMemeEditorOptions(),
+                editorSelectionOptions = memeEditorConfigUseCase.provideMemeEditorSelectionOptions(),
+                shareOptions = memeEditorConfigUseCase.provideShareOptions(),
+                shouldShowEditOptions = memeEditorConfigUseCase.provideShouldShowEditOptions(),
             )
         }
     }

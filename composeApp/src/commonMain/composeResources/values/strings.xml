@@ -33,4 +33,9 @@
     <string name="meme_sort_cd">Toggle the sort menu</string>
     <string name="meme_bottom_bar_undo_cd">Undo</string>
     <string name="meme_bottom_bar_redo_cd">Redo</string>
+
+    <string name="meme_editor_share_save_to_device_title">Save to device</string>
+    <string name="meme_editor_share_save_to_device_message">Save created meme in the Files of your device</string>
+    <string name="meme_editor_share_share_image_title">Share the meme</string>
+    <string name="meme_editor_share_share_image_message">Share your meme or open it in the other App</string>
 </resources>

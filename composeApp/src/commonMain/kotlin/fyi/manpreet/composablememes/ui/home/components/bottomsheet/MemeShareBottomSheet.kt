@@ -22,6 +22,7 @@ import com.composables.core.Sheet
 import fyi.manpreet.composablememes.ui.meme.state.ShareOption
 import fyi.manpreet.composablememes.ui.theme.fixedAccentColors
 import fyi.manpreet.composablememes.ui.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MemeShareBottomSheet(
@@ -86,13 +87,13 @@ private fun ShareItem(
         Column {
 
             Text(
-                text = option.title,
+                text = stringResource(option.title),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.fixedAccentColors.secondaryFixedDim,
             )
 
             Text(
-                text = option.subtitle,
+                text = stringResource(option.subtitle),
                 modifier = Modifier.padding(top = MaterialTheme.spacing.extraSmall),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,

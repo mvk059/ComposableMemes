@@ -58,6 +58,10 @@ import platform.UIKit.UIImageJPEGRepresentation
 
 actual class FileManager {
 
+    /**
+     * Save image in iOS document directory.
+     * Save the image in a relative path instead of a full path as iOS uses a document directory which changes on every launch/reinstall in simulator.
+     */
     actual suspend fun Raise<String>.saveImage(
         bitmap: ImageBitmap,
         fileName: MemeImageName
@@ -72,8 +76,9 @@ actual class FileManager {
                         NSUserDomainMask
                     ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
 
+                    val relativePath = fileName.value
                     val fileURL =
-                        documentDirectory.URLByAppendingPathComponent(fileName.value)?.also {
+                        documentDirectory.URLByAppendingPathComponent(relativePath)?.also {
                             if (!fileManager.fileExistsAtPath(it.path ?: "")) {
                                 fileManager.createFileAtPath(
                                     path = it.path ?: "",
@@ -97,10 +102,23 @@ actual class FileManager {
                             atomically = true
                         )
                     ) { "Failed to write image data to file" }
-                    MemeImagePath(path)
+                    MemeImagePath(relativePath)
                 }
             )
         }
+    }
+
+    /**
+     * Create the full path from the relative path
+     */
+    actual suspend fun Raise<String>.getFullImagePath(relativePath: String): String {
+        val fileManager = NSFileManager.defaultManager
+        val documentDirectory = (fileManager.URLsForDirectory(
+            NSDocumentDirectory,
+            NSUserDomainMask
+        ).firstOrNull() as? NSURL) ?: raise("Failed to get document directory")
+        return documentDirectory.URLByAppendingPathComponent(relativePath)?.path
+            ?: raise("Failed to get file path")
     }
 
     @OptIn(ExperimentalForeignApi::class)

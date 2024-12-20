@@ -51,6 +51,8 @@ actual class FileManager(
         }
     }
 
+    actual suspend fun Raise<String>.getFullImagePath(relativePath: String): String = relativePath
+
     actual suspend fun Raise<String>.deleteImage(fileName: MemeImageName) {
         withContext(Dispatchers.IO) {
             val activity = mainActivityUseCase.requireActivity()

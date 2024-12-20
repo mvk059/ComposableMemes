@@ -18,7 +18,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -26,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import com.composables.core.Icon
 import composablememes.composeapp.generated.resources.Res
 import composablememes.composeapp.generated.resources.home_bottom_sheet_choose_template_subtitle
@@ -117,6 +121,8 @@ private fun SearchContent(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
+    // This has to be a local state as there is an issue in iOS where the cursor keeps on moving to the start of the text field or to the previous character
+    var textFieldValue by remember { mutableStateOf(searchText) }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -134,13 +140,10 @@ private fun SearchContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
-                value = searchText,
+                value = textFieldValue,
                 onValueChange = {
-                    onSearchTextChange(
-                        HomeEvent.BottomSheetEvent.OnSearchTextChange(
-                            it
-                        )
-                    )
+                    textFieldValue = it
+                    onSearchTextChange(HomeEvent.BottomSheetEvent.OnSearchTextChange(it))
                 },
                 textStyle = MaterialTheme.typography.bodySmall.copy(
                     color = MaterialTheme.colorScheme.onTertiary,
@@ -182,7 +185,7 @@ private fun SearchContent(
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
+                    imeAction = ImeAction.Done,
                 ),
                 keyboardActions = KeyboardActions(
                     onDone = { keyboardController?.hide() }
@@ -192,7 +195,8 @@ private fun SearchContent(
                     unfocusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = MaterialTheme.colorScheme.outline,
                     unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
-                )
+                ),
+                visualTransformation = VisualTransformation.None,
             )
         }
 

@@ -155,7 +155,7 @@ class MemeViewModel(
     private fun addTextBox() {
         unselectAllTextBox()
         val id = Clock.System.now().epochSeconds
-        val text = "TAP TWICE TO EDIT"
+        val text = MemeConstants.DEFAULT_TEXTBOX_VALUE
         val fontSize = MemeConstants.DEFAULT_SLIDER_VALUE
         val editorSize = _memeState.value.editorOptions.editorSize
         val contentOffset = _memeState.value.editorOptions.imageContentOffset
@@ -163,7 +163,7 @@ class MemeViewModel(
         val newTextBox = MemeTextBox(
             id = id,
             text = text,
-            textSelection = TextRange(text.length),
+            textSelection = TextRange(0, text.length),
             offset = editorSize.middle() + contentOffset,
             relativePosition = editorSize.relativeMiddle(),
             isSelected = true,

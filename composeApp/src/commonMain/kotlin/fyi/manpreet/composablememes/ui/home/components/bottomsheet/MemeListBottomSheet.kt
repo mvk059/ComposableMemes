@@ -27,6 +27,7 @@ import com.composables.core.ModalBottomSheet
 import com.composables.core.ModalBottomSheetState
 import com.composables.core.Scrim
 import com.composables.core.Sheet
+import com.composables.core.SheetDetent
 import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.ui.home.components.item.MemeItem
 import fyi.manpreet.composablememes.ui.home.components.loader.Loader
@@ -49,6 +50,8 @@ fun MemeListBottomSheet(
     memesListSize: Int,
     onDismiss: () -> Unit,
 ) {
+
+    if (searchMode) sheetState.currentDetent = SheetDetent.FullyExpanded
 
     ModalBottomSheet(
         state = sheetState,

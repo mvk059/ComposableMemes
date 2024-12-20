@@ -185,10 +185,7 @@ private fun SearchContent(
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
-                    onDone = {
-                        keyboardController?.hide()
-//                            onDone()
-                    }
+                    onDone = { keyboardController?.hide() }
                 ),
                 colors = TextFieldDefaults.colors().copy(
                     focusedContainerColor = Color.Transparent,

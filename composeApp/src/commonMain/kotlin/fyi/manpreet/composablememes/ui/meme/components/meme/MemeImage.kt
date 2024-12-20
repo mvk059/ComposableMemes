@@ -351,38 +351,41 @@ private fun Content(
         }
     }
 
-    Box(
-        modifier = modifier
-            .then(if (textBox.isSelected) Modifier.border(1.dp, Color.White) else Modifier)
-            .onGloballyPositioned { onSizeChange(it.size) }
-    ) {
+    Box {
 
-        // Keep this text field before the next text field to keep the stroke behind the actual text
-        StrokedTextField(
-            modifier = Modifier
-                .width(IntrinsicSize.Min)
-                .height(IntrinsicSize.Min)
-                .padding(MaterialTheme.spacing.extraSmall),
-            value = textFieldValue,
-            textBox = textBox
-        )
+        Box(
+            modifier = modifier
+                .then(if (textBox.isSelected) Modifier.border(1.dp, Color.White) else Modifier)
+                .onGloballyPositioned { onSizeChange(it.size) }
+        ) {
 
-        // Main text field
-        EditableTextField(
-            modifier = Modifier
-                .width(IntrinsicSize.Min)
-                .height(IntrinsicSize.Min)
-                .padding(MaterialTheme.spacing.extraSmall)
-                .focusRequester(focusRequester),
-            value = textFieldValue,
-            onValueChange = {
-                textFieldValue = it
-                onTextBoxTextChange(
-                    MemeEvent.EditorEvent.UpdateTextBox(text = it.text, selection = it.selection)
-                )
-            },
-            textBox = textBox,
-        )
+            // Keep this text field before the next text field to keep the stroke behind the actual text
+            StrokedTextField(
+                modifier = Modifier
+                    .width(IntrinsicSize.Min)
+                    .height(IntrinsicSize.Min)
+                    .padding(MaterialTheme.spacing.extraSmall),
+                value = textFieldValue,
+                textBox = textBox
+            )
+
+            // Main text field
+            EditableTextField(
+                modifier = Modifier
+                    .width(IntrinsicSize.Min)
+                    .height(IntrinsicSize.Min)
+                    .padding(MaterialTheme.spacing.extraSmall)
+                    .focusRequester(focusRequester),
+                value = textFieldValue,
+                onValueChange = {
+                    textFieldValue = it
+                    onTextBoxTextChange(
+                        MemeEvent.EditorEvent.UpdateTextBox(text = it.text, selection = it.selection)
+                    )
+                },
+                textBox = textBox,
+            )
+        }
 
         if (textBox.isSelected) {
             Icon(

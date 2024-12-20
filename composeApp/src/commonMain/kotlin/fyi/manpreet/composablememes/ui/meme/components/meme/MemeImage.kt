@@ -340,21 +340,15 @@ private fun Content(
     val keyboardController = LocalSoftwareKeyboardController.current
     var textFieldValue by remember(textBox.id) {
         mutableStateOf(
-            TextFieldValue(text = textBox.text, selection = TextRange(textBox.text.length))
+            TextFieldValue(text = textBox.text, selection = TextRange(0, textBox.text.length))
         )
     }
-    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
-    LaunchedEffect(textBox.isEditable) {
+    LaunchedEffect(textBox.id, textBox.isEditable) {
         if (textBox.isEditable) {
             focusRequester.requestFocus()
             keyboardController?.show()
         }
-    }
-
-    // Reset layout result when text changes
-    LaunchedEffect(textBox.text) {
-        textLayoutResult = null
     }
 
     Box(
@@ -388,8 +382,6 @@ private fun Content(
                 )
             },
             textBox = textBox,
-            textLayoutResult = textLayoutResult,
-            onTextLayoutResult = { textLayoutResult = it }
         )
 
         if (textBox.isSelected) {
@@ -440,29 +432,15 @@ private fun EditableTextField(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     textBox: MemeTextBox,
-    textLayoutResult: TextLayoutResult?,
-    onTextLayoutResult: (TextLayoutResult) -> Unit,
 ) {
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val position = awaitPointerEvent().changes.first().position
-                        textLayoutResult?.let { layout ->
-                            val offset = layout.getOffsetForPosition(position)
-                            onValueChange(value.copy(selection = TextRange(offset)))
-                        }
-                    }
-                }
-            },
+        modifier = modifier,
         enabled = textBox.isEditable,
         textStyle = textBox.textStyle.copy(
             fontFamily = textBox.fontFamilyType.toFontFamily(),
         ),
-        onTextLayout = { onTextLayoutResult(it) },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Default

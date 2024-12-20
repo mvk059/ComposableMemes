@@ -9,4 +9,5 @@ object MemeConstants {
     const val NAVIGATE_BACK_RELOAD = "Reload"
     const val TEMP_FILE_NAME = "temp_"
     const val STORAGE_FILE_NAME = "/memes.json"
+    const val DEFAULT_TEXTBOX_VALUE = "TAP TWICE TO EDIT"
 }

@@ -9,8 +9,6 @@ import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 import fyi.manpreet.composablememes.ui.home.state.HomeState
 import fyi.manpreet.composablememes.ui.home.state.MemeListBottomSheet
 import fyi.manpreet.composablememes.usecase.SaveImageUseCase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -82,7 +80,7 @@ class HomeViewModel(
     }
 
     private fun initHomeState() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val selectedMemes = repository.getMemesSortedByFavorites()
             _homeState.update { it.copy(memes = selectedMemes) }
             deleteTemporaryImages()
@@ -90,7 +88,7 @@ class HomeViewModel(
     }
 
     private fun MutableStateFlow<MemeListBottomSheet>.loadAllMemes() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 val memes = repository.getAllMemes()
                 emit(MemeListBottomSheet(memes = memes, isLoading = false))
@@ -121,7 +119,7 @@ class HomeViewModel(
     }
 
     private fun onMemeFavoriteClick(id: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val meme = _homeState.value.memes.first { it.id == id }
             val updatedMeme = meme.copy(isFavorite = meme.isFavorite.not())
             repository.updateMeme(updatedMeme)
@@ -171,7 +169,7 @@ class HomeViewModel(
     }
 
     private fun onShare() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val memes = _homeState.value.memes.filter { it.isSelected }.map { it.imageName }
             saveImageUseCase.saveImages(memes)
         }
@@ -187,7 +185,7 @@ class HomeViewModel(
     }
 
     private fun updateList(sortType: HomeState.SortTypes) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val selectedMemes = when (sortType) {
                 is HomeState.SortTypes.Favorites -> repository.getMemesSortedByFavorites()
                 is HomeState.SortTypes.DateAdded -> repository.getMemesSortedByDate()
@@ -201,7 +199,7 @@ class HomeViewModel(
     }
 
     private fun deleteFiles() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val memes = _homeState.value.memes.filter { it.isSelected }
             either {
                 with(fileManager) {

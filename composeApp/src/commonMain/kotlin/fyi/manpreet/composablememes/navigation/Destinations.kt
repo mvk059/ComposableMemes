@@ -12,3 +12,6 @@ data class MemeDestination(
     val width: Int,
     val height: Int,
 )
+
+@Serializable
+object HomeWasmDestination

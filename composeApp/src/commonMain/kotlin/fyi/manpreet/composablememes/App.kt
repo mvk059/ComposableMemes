@@ -8,9 +8,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import fyi.manpreet.composablememes.navigation.HomeDestination
+import fyi.manpreet.composablememes.navigation.HomeWasmDestination
 import fyi.manpreet.composablememes.navigation.MemeDestination
 import fyi.manpreet.composablememes.ui.home.HomeScreen
+import fyi.manpreet.composablememes.ui.home.HomeScreenExpanded
 import fyi.manpreet.composablememes.ui.home.HomeViewModel
+import fyi.manpreet.composablememes.ui.home.state.HomeEvent
 import fyi.manpreet.composablememes.ui.meme.MemeScreen
 import fyi.manpreet.composablememes.ui.theme.MemeTheme
 import fyi.manpreet.composablememes.util.MemeConstants
@@ -22,15 +25,21 @@ import org.koin.compose.viewmodel.koinViewModel
 fun App(
     viewModel: HomeViewModel = koinViewModel(),
     navController: NavHostController = rememberNavController(),
+    platform: Platform,
 ) {
     val homeState = viewModel.homeState.collectAsStateWithLifecycle()
     val allMemes = viewModel.allMemesList.collectAsStateWithLifecycle()
 
     MemeTheme {
 
+        val startDestination: Any = when (platform) {
+            Platform.Android, Platform.Ios -> HomeDestination
+            Platform.WasmJs -> HomeWasmDestination
+        }
+
         NavHost(
             navController = navController,
-            startDestination = HomeDestination,
+            startDestination = startDestination,
         ) {
 
             composable<HomeDestination> {
@@ -62,6 +71,27 @@ fun App(
                     onDeleteClickTopBar = viewModel::onEvent,
                     onCancelClickDialog = viewModel::onEvent,
                     onDeleteClickDialog = viewModel::onEvent,
+                    onReload = viewModel::onEvent,
+                )
+            }
+
+            composable<HomeWasmDestination> {
+                viewModel.onEvent(HomeEvent.BottomSheetEvent.OnFabClick)
+
+                HomeScreenExpanded(
+                    navController = navController,
+                    memeListBottomSheet = allMemes.value,
+                    onMemeSelectBottomSheet = {
+                        viewModel.onEvent(it)
+                        navController.navigate(
+                            MemeDestination(
+                                memeName = it.meme.imageName.value,
+                                memePath = it.meme.path?.value ?: "",
+                                width = it.meme.width,
+                                height = it.meme.height
+                            )
+                        )
+                    },
                     onReload = viewModel::onEvent,
                 )
             }

@@ -1,7 +1,9 @@
 package fyi.manpreet.composablememes
 
-interface Platform {
-    val name: String
+sealed interface Platform {
+    data object WasmJs: Platform
+    data object Android: Platform
+    data object Ios: Platform
 }
 
 expect fun getPlatform(): Platform

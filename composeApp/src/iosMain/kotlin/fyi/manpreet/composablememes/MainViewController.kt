@@ -1,6 +1,7 @@
 package fyi.manpreet.composablememes
 
 import androidx.compose.ui.window.ComposeUIViewController
+import fyi.manpreet.composablememes.Platform
 import fyi.manpreet.composablememes.di.initKoin
 
 fun MainViewController() = ComposeUIViewController(
@@ -8,6 +9,6 @@ fun MainViewController() = ComposeUIViewController(
         initKoin()
     },
     content = {
-        App()
+        App(platform = Platform.Ios)
     }
 )

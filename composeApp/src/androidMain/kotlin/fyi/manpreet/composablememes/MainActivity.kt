@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity(), KoinComponent {
 
         installSplashScreen()
         setContent {
-            App()
+            App(platform = Platform.Android)
         }
     }
 
@@ -30,5 +30,5 @@ class MainActivity : ComponentActivity(), KoinComponent {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+    App(platform = Platform.Android)
 }

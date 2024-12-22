@@ -13,6 +13,7 @@ import fyi.manpreet.composablememes.data.model.Meme
 import fyi.manpreet.composablememes.data.model.MemeImageName
 import fyi.manpreet.composablememes.data.model.MemeImagePath
 import fyi.manpreet.composablememes.navigation.MemeDestination
+import fyi.manpreet.composablememes.platform.platform.Platforms
 import fyi.manpreet.composablememes.ui.meme.mapper.SliderValue
 import fyi.manpreet.composablememes.ui.meme.mapper.sliderValueToFontSize
 import fyi.manpreet.composablememes.ui.meme.state.FontFamilyType
@@ -37,6 +38,7 @@ import kotlinx.datetime.Clock
 class MemeViewModel(
     private val saveImageUseCase: SaveImageUseCase,
     private val memeEditorConfigUseCase: MemeEditorConfigUseCase,
+    private val platforms: Platforms,
 ) : ViewModel() {
 
     private val _memeState = MutableStateFlow(MemeState())
@@ -170,7 +172,7 @@ class MemeViewModel(
             isEditable = true,
             textStyle = TextStyle(
                 color = Color.White,
-                fontSize = fontSize.sliderValueToFontSize()
+                fontSize = fontSize.sliderValueToFontSize(platforms.getPlatform())
             ),
             fontFamilyType = FontFamilyType.AntonSC,
         )
@@ -407,7 +409,7 @@ class MemeViewModel(
                     if (box.id == selectedTextBox.id)
                         box.copy(
                             textStyle = selectedTextBox.textStyle.copy(
-                                fontSize = value.sliderValueToFontSize()
+                                fontSize = value.sliderValueToFontSize(platforms.getPlatform())
                             )
                         )
                     else box

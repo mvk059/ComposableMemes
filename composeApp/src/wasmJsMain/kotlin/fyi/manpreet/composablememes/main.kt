@@ -14,7 +14,7 @@ fun main() {
     CanvasBasedWindow(canvasElementId = "ComposeTarget") {
 
         Box(modifier = Modifier.fillMaxSize()) {
-            App(platform = Platform.WasmJs)
+            App()
         }
     }
 }

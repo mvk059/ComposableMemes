@@ -10,6 +10,8 @@ import androidx.navigation.toRoute
 import fyi.manpreet.composablememes.navigation.HomeDestination
 import fyi.manpreet.composablememes.navigation.HomeWasmDestination
 import fyi.manpreet.composablememes.navigation.MemeDestination
+import fyi.manpreet.composablememes.platform.platform.Platform
+import fyi.manpreet.composablememes.platform.platform.Platforms
 import fyi.manpreet.composablememes.ui.home.HomeScreen
 import fyi.manpreet.composablememes.ui.home.HomeScreenExpanded
 import fyi.manpreet.composablememes.ui.home.HomeViewModel
@@ -18,6 +20,7 @@ import fyi.manpreet.composablememes.ui.meme.MemeScreen
 import fyi.manpreet.composablememes.ui.theme.MemeTheme
 import fyi.manpreet.composablememes.util.MemeConstants
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -25,14 +28,14 @@ import org.koin.compose.viewmodel.koinViewModel
 fun App(
     viewModel: HomeViewModel = koinViewModel(),
     navController: NavHostController = rememberNavController(),
-    platform: Platform,
+    platform: Platforms = koinInject<Platforms>(),
 ) {
     val homeState = viewModel.homeState.collectAsStateWithLifecycle()
     val allMemes = viewModel.allMemesList.collectAsStateWithLifecycle()
 
     MemeTheme {
 
-        val startDestination: Any = when (platform) {
+        val startDestination: Any = when (platform.getPlatform()) {
             Platform.Android, Platform.Ios -> HomeDestination
             Platform.WasmJs -> HomeWasmDestination
         }

@@ -1,4 +1,4 @@
-package fyi.manpreet.composablememes
+package fyi.manpreet.composablememes.platform.platform
 
 sealed interface Platform {
     data object WasmJs: Platform
@@ -6,4 +6,6 @@ sealed interface Platform {
     data object Ios: Platform
 }
 
-expect fun getPlatform(): Platform
+expect class Platforms {
+    fun getPlatform(): Platform
+}

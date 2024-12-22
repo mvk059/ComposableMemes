@@ -38,6 +38,7 @@ fun initKoin(config: KoinAppDeclaration? = null) =
             provideFileManagerModule(),
             provideStorageManager(),
             provideStorageModule(),
+            providePlatformModule(),
         )
     }
 

@@ -63,9 +63,9 @@ class SaveImageUseCase(
                 this@either.cropImage(imageBitmap, imageOffset, imageSize)
             }
         }.fold(
-            ifLeft = { _saveState.update { Either.Left(SaveError.Failure("Failed to crop image: $it")) } },
+            ifLeft = { error -> _saveState.update { Either.Left(SaveError.Failure("Failed to crop image: $error")) } },
             ifRight = { bitmap ->
-                requireNotNull(bitmap) { "Failed to crop image" }
+                requireNotNull(bitmap) { "Failed to crop image as bitmap is null" }
                 saveImage(bitmap, type, meme)
             }
         )
@@ -104,7 +104,7 @@ class SaveImageUseCase(
                 this@either.saveImage(imageBitmap, imageName)
             }
         }.fold(
-            ifLeft = { Either.Left(SaveError.Failure("Error saving image: $it")) },
+            ifLeft = { error -> Either.Left(SaveError.Failure("Error saving image: $error")) },
             ifRight = { path ->
                 println("Image saved successfully: $path")
                 when (type) {
@@ -125,7 +125,7 @@ class SaveImageUseCase(
                 this@either.shareImage(listOf(imageName))
             }
         }.fold(
-            ifLeft = { Either.Left(SaveError.Failure("Error sharing image: $it")) },
+            ifLeft = { error -> Either.Left(SaveError.Failure("Error sharing image: $error")) },
             ifRight = { _saveState.update { Either.Right(ShareOption.ShareType.SHARE) } }
         )
     }
@@ -136,7 +136,7 @@ class SaveImageUseCase(
                 this@either.shareImage(imageName)
             }
         }.fold(
-            ifLeft = { Either.Left(SaveError.Failure("Error sharing image: $it")) },
+            ifLeft = { error -> Either.Left(SaveError.Failure("Error sharing image: $error")) },
             ifRight = { _saveState.update { Either.Right(ShareOption.ShareType.SHARE) } }
         )
     }

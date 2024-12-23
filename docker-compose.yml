@@ -1,0 +1,8 @@
+services:
+  web:
+    build:
+      context: .
+      platforms:
+        - "linux/amd64"
+    ports:
+      - "3002:3002"

@@ -1,6 +1,8 @@
 name: Build and Deploy
-# Only trigger on PR merges to main branch
+# Trigger on PR merges and direct pushes to main branch
 on:
+  push:
+    branches: [ main ]
   pull_request:
     types: [closed]
     branches: [ main ]
@@ -8,142 +10,48 @@ on:
 env:
   # Replace these with your values
   DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/meme-editor
-  APP_URL: https://meme.manpreet.fyi/
 
 jobs:
   build-and-deploy:
-    # Ensures this only runs on PR merges, not on PR closes
-    if: github.event.pull_request.merged == true
+    # For PRs, only run on merge, not on close. For pushes, always run
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Generate a unique version for this build
-      # Format: YYYYMMDD.github_run_number (e.g., 20240323.42)
-      - name: Generate build version
-        id: version
-        run: |
-          echo "BUILD_VERSION=$(date +'%Y%m%d').${{ github.run_number }}" >> $GITHUB_ENV
-
-      # Step 3: Set up Docker Buildx for multi-platform builds
+      # Step 2: Set up Docker Buildx for multi-platform builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Step 4: Login to Docker Hub
+      # Step 3: Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Step 5: Build and push Docker image
+      # Step 4: Build and push Docker image
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          # Creates both a versioned tag and 'latest'
-          tags: |
-            ${{ env.DOCKER_IMAGE }}:latest
-            ${{ env.DOCKER_IMAGE }}:${{ env.BUILD_VERSION }}
-          # Uses Docker layer caching to speed up builds
+          tags: ${{ env.DOCKER_IMAGE }}:latest
           cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
           cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
           platforms: linux/amd64
 
-      # Step 6: Deploy to Coolify
+      # Step 5: Deploy to Coolify
+      # Note: The application ID can be found in your Coolify web URL after /application/
       - name: Deploy to Coolify
-        id: deploy
         run: |
-          # Verify API endpoint is accessible
-          echo "Testing API connectivity..."
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-          "${{ secrets.COOLIFY_API_URL }}/api/v1/health" \
-          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}")
-          
-          if [ "$HTTP_CODE" != "200" ]; then
-          echo "❌ API health check failed with status: $HTTP_CODE"
-          exit 1
-          fi
-          
-          echo "✅ API is accessible"
-          
-          # Get current deployment status
-          echo "Fetching current deployment status..."
-          CURRENT_APP=$(curl -s "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}" \
-          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}")
-          
-          # Validate JSON response
-          if ! echo "$CURRENT_APP" | jq '.' >/dev/null 2>&1; then
-          echo "❌ Invalid JSON response from API:"
-          echo "$CURRENT_APP"
-          exit 1
-          fi
-          
-          # Extract previous version
-          PREV_VERSION=$(echo "$CURRENT_APP" | jq -r '.configuration.image // .image // .tag // .imageTag // "unknown"')
-          echo "Previous version: $PREV_VERSION"
-          echo "PREVIOUS_VERSION=${PREV_VERSION}" >> $GITHUB_ENV
-          
-          # Deploy new version
-          echo "Deploying version ${{ env.BUILD_VERSION }}..."
-          DEPLOY_RESPONSE=$(curl -s -X POST \
+          curl -X POST \
           "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
           -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
           -H "Content-Type: application/json" \
           -d "{
-          \"imageTag\": \"${{ env.BUILD_VERSION }}\",
-          \"force\": true
-          }")
-          
-          # Validate deployment response
-          if ! echo "$DEPLOY_RESPONSE" | jq '.' >/dev/null 2>&1; then
-          echo "❌ Invalid deployment response:"
-          echo "$DEPLOY_RESPONSE"
-          exit 1
-          fi
-          
-          DEPLOYMENT_STATUS=$(echo "$DEPLOY_RESPONSE" | jq -r '.status // "unknown"')
-          echo "Deployment status: $DEPLOYMENT_STATUS"
-          
-          if [ "$DEPLOYMENT_STATUS" != "success" ] && [ "$DEPLOYMENT_STATUS" != "pending" ]; then
-          echo "❌ Deployment failed"
-          exit 1
-          fi
-          
-          echo "✅ Deployment initiated successfully"
-
-      # Step 7: Wait for deployment to stabilize
-      - name: Wait for deployment
-        run: sleep 30  # Adjust based on your typical deployment time
-
-      # Step 8: Health check
-      - name: Health check
-        run: |
-          attempt=1
-          max_attempts=5
-          until $(curl --output /dev/null --silent --head --fail ${{ env.APP_URL }}/health); do
-            if [ ${attempt} -eq ${max_attempts} ]; then
-              echo "Health check failed after ${max_attempts} attempts"
-              exit 1
-            fi
-            printf '.'
-            attempt=$(($attempt+1))
-            sleep 10
-          done
-          echo "Application is healthy!"
-
-      # Step 9: Automatic rollback on failure
-      - name: Rollback on failure
-        if: failure()
-        run: |
-          echo "Deployment failed, rolling back to ${{ env.PREVIOUS_VERSION }}"
-          curl -X POST "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
-          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "imageTag": "${{ env.PREVIOUS_VERSION }}",
-            "force": true
-          }'
+            \"imageTag\": \"latest\",
+            \"force\": true
+          }"

@@ -57,21 +57,30 @@ jobs:
       - name: Deploy to Coolify
         id: deploy
         run: |
-          # Get the current version for potential rollback
-          PREV_VERSION=$(curl -s "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
-            | jq -r '.tag // .imageTag')
+          # First, let's see what the API returns
+          CURRENT_APP=$(curl -s "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}")
           
+          echo "API Response:"
+          echo "$CURRENT_APP" | jq '.'
+          
+          # Try to get the version using various possible paths
+          PREV_VERSION=$(echo "$CURRENT_APP" | jq -r '.configuration.image // .image // .tag // .imageTag // "unknown"')
+          
+          echo "Previous version detected: $PREV_VERSION"
           echo "PREVIOUS_VERSION=${PREV_VERSION}" >> $GITHUB_ENV
           
           # Deploy new version
-          curl -X POST "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
+          DEPLOY_RESPONSE=$(curl -X POST "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
             -H "Content-Type: application/json" \
-            --data-raw "{
+            -d "{
               \"imageTag\": \"${{ env.BUILD_VERSION }}\",
               \"force\": true
-            }"
+            }")
+          
+          echo "Deploy Response:"
+          echo "$DEPLOY_RESPONSE" | jq '.'
 
       # Step 7: Wait for deployment to stabilize
       - name: Wait for deployment

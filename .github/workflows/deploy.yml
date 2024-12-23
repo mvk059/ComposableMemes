@@ -57,33 +57,63 @@ jobs:
       - name: Deploy to Coolify
         id: deploy
         run: |
-          # Let's see the raw API response first
-          echo "Raw API Response:"
-          CURRENT_APP=$(curl -s "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}")
-          echo "$CURRENT_APP"
+          # Verify API endpoint is accessible
+          echo "Testing API connectivity..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+          "${{ secrets.COOLIFY_API_URL }}/api/v1/health" \
+          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}")
           
-          # Now try to parse it
-          if echo "$CURRENT_APP" | jq '.' >/dev/null 2>&1; then
-            echo "Valid JSON received"
-            PREV_VERSION=$(echo "$CURRENT_APP" | jq -r '.configuration.image // .image // .tag // .imageTag // "unknown"')
-          else
-            echo "Invalid JSON received"
-            echo "PREVIOUS_VERSION=unknown" >> $GITHUB_ENV
+          if [ "$HTTP_CODE" != "200" ]; then
+          echo "❌ API health check failed with status: $HTTP_CODE"
+          exit 1
           fi
           
-          echo "Attempting deployment..."
-          # Deploy new version
-          DEPLOY_RESPONSE=$(curl -v -X POST "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"imageTag\": \"${{ env.BUILD_VERSION }}\",
-              \"force\": true
-            }")
+          echo "✅ API is accessible"
           
-          echo "Raw Deploy Response:"
+          # Get current deployment status
+          echo "Fetching current deployment status..."
+          CURRENT_APP=$(curl -s "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}" \
+          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}")
+          
+          # Validate JSON response
+          if ! echo "$CURRENT_APP" | jq '.' >/dev/null 2>&1; then
+          echo "❌ Invalid JSON response from API:"
+          echo "$CURRENT_APP"
+          exit 1
+          fi
+          
+          # Extract previous version
+          PREV_VERSION=$(echo "$CURRENT_APP" | jq -r '.configuration.image // .image // .tag // .imageTag // "unknown"')
+          echo "Previous version: $PREV_VERSION"
+          echo "PREVIOUS_VERSION=${PREV_VERSION}" >> $GITHUB_ENV
+          
+          # Deploy new version
+          echo "Deploying version ${{ env.BUILD_VERSION }}..."
+          DEPLOY_RESPONSE=$(curl -s -X POST \
+          "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
+          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d "{
+          \"imageTag\": \"${{ env.BUILD_VERSION }}\",
+          \"force\": true
+          }")
+          
+          # Validate deployment response
+          if ! echo "$DEPLOY_RESPONSE" | jq '.' >/dev/null 2>&1; then
+          echo "❌ Invalid deployment response:"
           echo "$DEPLOY_RESPONSE"
+          exit 1
+          fi
+          
+          DEPLOYMENT_STATUS=$(echo "$DEPLOY_RESPONSE" | jq -r '.status // "unknown"')
+          echo "Deployment status: $DEPLOYMENT_STATUS"
+          
+          if [ "$DEPLOYMENT_STATUS" != "success" ] && [ "$DEPLOYMENT_STATUS" != "pending" ]; then
+          echo "❌ Deployment failed"
+          exit 1
+          fi
+          
+          echo "✅ Deployment initiated successfully"
 
       # Step 7: Wait for deployment to stabilize
       - name: Wait for deployment

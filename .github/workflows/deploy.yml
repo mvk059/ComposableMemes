@@ -7,7 +7,7 @@ on:
 
 env:
   # Replace these with your values
-  DOCKER_IMAGE: mvk059/meme-editor
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/meme-editor
   APP_URL: https://meme.manpreet.fyi/
 
 jobs:

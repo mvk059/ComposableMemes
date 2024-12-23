@@ -57,21 +57,24 @@ jobs:
       - name: Deploy to Coolify
         id: deploy
         run: |
-          # First, let's see what the API returns
+          # Let's see the raw API response first
+          echo "Raw API Response:"
           CURRENT_APP=$(curl -s "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}")
+          echo "$CURRENT_APP"
           
-          echo "API Response:"
-          echo "$CURRENT_APP" | jq '.'
+          # Now try to parse it
+          if echo "$CURRENT_APP" | jq '.' >/dev/null 2>&1; then
+            echo "Valid JSON received"
+            PREV_VERSION=$(echo "$CURRENT_APP" | jq -r '.configuration.image // .image // .tag // .imageTag // "unknown"')
+          else
+            echo "Invalid JSON received"
+            echo "PREVIOUS_VERSION=unknown" >> $GITHUB_ENV
+          fi
           
-          # Try to get the version using various possible paths
-          PREV_VERSION=$(echo "$CURRENT_APP" | jq -r '.configuration.image // .image // .tag // .imageTag // "unknown"')
-          
-          echo "Previous version detected: $PREV_VERSION"
-          echo "PREVIOUS_VERSION=${PREV_VERSION}" >> $GITHUB_ENV
-          
+          echo "Attempting deployment..."
           # Deploy new version
-          DEPLOY_RESPONSE=$(curl -X POST "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
+          DEPLOY_RESPONSE=$(curl -v -X POST "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d "{
@@ -79,8 +82,8 @@ jobs:
               \"force\": true
             }")
           
-          echo "Deploy Response:"
-          echo "$DEPLOY_RESPONSE" | jq '.'
+          echo "Raw Deploy Response:"
+          echo "$DEPLOY_RESPONSE"
 
       # Step 7: Wait for deployment to stabilize
       - name: Wait for deployment

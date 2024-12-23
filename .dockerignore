@@ -1,0 +1,55 @@
+!composeApp/build/dist/wasmJs/productionExecutable/
+*.md
+
+# Gradle files
+.gradle/
+build/
+
+# Ignore Gradle wrapper jar file
+gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration file
+local.properties
+
+# Log Files
+*.log
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Android Studio captures folder
+captures/
+
+# IntelliJ
+*.iml
+.idea/
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Version control
+.git
+.gitignore
+
+# Node.js dependencies
+node_modules/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Linux
+*~
+
+# Temporary files
+*.tmp
+*.temp

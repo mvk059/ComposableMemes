@@ -60,18 +60,18 @@ jobs:
           # Get the current version for potential rollback
           PREV_VERSION=$(curl -s "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
-            | jq -r '.imageTag')
+            | jq -r '.tag // .imageTag')
           
-          echo "PREVIOUS_VERSION=$PREV_VERSION" >> $GITHUB_ENV
+          echo "PREVIOUS_VERSION=${PREV_VERSION}" >> $GITHUB_ENV
           
           # Deploy new version
           curl -X POST "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/${{ secrets.COOLIFY_APP_ID }}/deploy" \
-          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "imageTag": "${{ env.BUILD_VERSION }}",
-            "force": true
-          }'
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            --data-raw "{
+              \"imageTag\": \"${{ env.BUILD_VERSION }}\",
+              \"force\": true
+            }"
 
       # Step 7: Wait for deployment to stabilize
       - name: Wait for deployment

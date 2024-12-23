@@ -3,6 +3,6 @@ services:
     build:
       context: .
       platforms:
-        - "linux/amd64"
+        - "${DOCKER_PLATFORM:-linux/amd64}" # Default to amd64, override for local dev
     ports:
       - "3002:3002"

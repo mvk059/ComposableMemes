@@ -43,7 +43,7 @@ RUN mkdir -p /app/collected-dist && \
     cp -r /app/composeApp/build/processedResources/wasmJs/main/* /app/collected-dist/ || true
 
 # Production stage - explicitly set platform
-FROM --platform=linux/amd64 nginx:alpine
+FROM nginx:alpine
 COPY --from=build /app/collected-dist/ /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 

@@ -26,6 +26,12 @@ kotlin {
                     }
                 }
             }
+            // Add npm resolution
+            nodejs {
+                dependencies {
+                    devNpm("ws", "8.17.1")
+                }
+            }
         }
         binaries.executable()
     }

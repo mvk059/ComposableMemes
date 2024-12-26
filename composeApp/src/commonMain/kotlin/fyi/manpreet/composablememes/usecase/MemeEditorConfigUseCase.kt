@@ -15,6 +15,8 @@ import composablememes.composeapp.generated.resources.meme_editor_share_save_to_
 import composablememes.composeapp.generated.resources.meme_editor_share_save_to_device_title
 import composablememes.composeapp.generated.resources.meme_editor_share_share_image_message
 import composablememes.composeapp.generated.resources.meme_editor_share_share_image_title
+import fyi.manpreet.composablememes.platform.platform.Platform
+import fyi.manpreet.composablememes.platform.platform.Platforms
 import fyi.manpreet.composablememes.ui.meme.state.FontFamilyType
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorOptions
 import fyi.manpreet.composablememes.ui.meme.state.MemeEditorSelectionOptions
@@ -127,21 +129,28 @@ class MemeEditorConfigUseCase {
             ),
         )
 
-     fun provideShareOptions(): List<ShareOption> =
-        listOf(
-            ShareOption(
-                title = Res.string.meme_editor_share_save_to_device_title,
-                subtitle = Res.string.meme_editor_share_save_to_device_message,
-                icon = Icons.Outlined.SimCardDownload,
-                type = ShareOption.ShareType.SAVE,
-            ),
-            ShareOption(
-                title = Res.string.meme_editor_share_share_image_title,
-                subtitle = Res.string.meme_editor_share_share_image_message,
-                icon = Icons.Filled.Share,
-                type = ShareOption.ShareType.SHARE,
+    fun provideShareOptions(platforms: Platforms): List<ShareOption> =
+        buildList {
+            add(
+                ShareOption(
+                    title = Res.string.meme_editor_share_save_to_device_title,
+                    subtitle = Res.string.meme_editor_share_save_to_device_message,
+                    icon = Icons.Outlined.SimCardDownload,
+                    type = ShareOption.ShareType.SAVE,
+                )
             )
-        )
+
+            if (platforms.getPlatform() != Platform.WasmJs) {
+                add(
+                    ShareOption(
+                        title = Res.string.meme_editor_share_share_image_title,
+                        subtitle = Res.string.meme_editor_share_share_image_message,
+                        icon = Icons.Filled.Share,
+                        type = ShareOption.ShareType.SHARE,
+                    )
+                )
+            }
+        }
 
     fun provideShouldShowEditOptions() = false
 }

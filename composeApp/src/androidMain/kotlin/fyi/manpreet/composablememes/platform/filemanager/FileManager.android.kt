@@ -51,7 +51,14 @@ actual class FileManager(
         }
     }
 
-    actual suspend fun Raise<String>.getFullImagePath(relativePath: String): String = relativePath
+    actual suspend fun Raise<String>.getFullImagePath(relativePath: String): String {
+        return try {
+            val filesDir = mainActivityUseCase.requireActivity().filesDir
+            File(filesDir, relativePath).absolutePath
+        } catch (e: Exception) {
+            raise("Failed to get file path: ${e.message}")
+        }
+    }
 
     actual suspend fun Raise<String>.deleteImage(fileName: MemeImageName) {
         withContext(Dispatchers.IO) {

@@ -15,7 +15,7 @@ fun Meme.toMemeData(): MemeTable.MemeData {
         id = id,
         imageUrl = imageName.value,
         createdDateInMillis = Clock.System.now().toEpochMilliseconds(),
-        path = path.value,
+        path = path.value.substringAfterLast("/"),
         isFavorite = isFavorite,
     )
 }

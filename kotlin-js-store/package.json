@@ -1,7 +1,7 @@
 {
   "private": true,
   "devDependencies": {
-    "ws": "^8.17.1",
+    "ws": "^8.18.0",
     "webpack-dev-server": "^4.15.1"
   }
 }

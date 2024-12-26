@@ -29,7 +29,7 @@ kotlin {
             // Add npm resolution
             nodejs {
                 dependencies {
-                    devNpm("ws", "8.17.1")
+                    devNpm("ws", "8.18.0")
                 }
             }
         }

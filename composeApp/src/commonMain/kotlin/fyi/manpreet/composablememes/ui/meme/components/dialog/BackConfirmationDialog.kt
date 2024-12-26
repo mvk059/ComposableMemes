@@ -43,7 +43,7 @@ fun BackConfirmationDialog(
                 modifier = modifier
                     .displayCutoutPadding()
                     .systemBarsPadding()
-                    .widthIn(max = MaterialTheme.spacing.memeBackDialogSize)    // Large size so that it fills the width in phones and shows smaller size in web
+                    .widthIn(max = MaterialTheme.spacing.mobileMaxWidthSize)    // Large size so that it fills the width in phones and shows smaller size in web
                     .wrapContentHeight()
                     .padding(MaterialTheme.spacing.large)
                     .background(

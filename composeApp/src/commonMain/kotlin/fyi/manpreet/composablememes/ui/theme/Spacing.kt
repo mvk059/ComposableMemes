@@ -31,7 +31,8 @@ data class Spacing(
     val bottomBarSize: Dp = 80.dp,
     val bottomBarGapSize: Dp = 100.dp,
 
-    val memeBackDialogSize: Dp = 500.dp
+    // Max Width for mobile but not for bigger size devices
+    val mobileMaxWidthSize: Dp = 500.dp
 )
 
 val LocalSpacing = staticCompositionLocalOf { Spacing() }

@@ -80,7 +80,7 @@ class MemeViewModel(
                 ),
                 editorOptions = memeEditorConfigUseCase.provideMemeEditorOptions(),
                 editorSelectionOptions = memeEditorConfigUseCase.provideMemeEditorSelectionOptions(),
-                shareOptions = memeEditorConfigUseCase.provideShareOptions(),
+                shareOptions = memeEditorConfigUseCase.provideShareOptions(platforms),
                 shouldShowEditOptions = memeEditorConfigUseCase.provideShouldShowEditOptions(),
             )
         }

@@ -76,7 +76,8 @@ class MemeViewModel(
                     imageName = MemeImageName(meme.memeName),
                     path = MemeImagePath(meme.memePath),
                     width = meme.width,
-                    height = meme.height
+                    height = meme.height,
+                    createdDateInMillis = Meme.INVALID_ID,
                 ),
                 editorOptions = memeEditorConfigUseCase.provideMemeEditorOptions(),
                 editorSelectionOptions = memeEditorConfigUseCase.provideMemeEditorSelectionOptions(),

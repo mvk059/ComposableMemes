@@ -99,7 +99,3 @@ Please ensure your code follows the project's coding standards and includes appr
    limitations under the License.
 ```
 
----
-
-Made with ❤️ by [Manpreet Kunnath]
-

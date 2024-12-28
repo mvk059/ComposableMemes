@@ -33,7 +33,14 @@
 - **Cross-Platform**:
   - Seamless experience across devices
   - Consistent UI across platforms
- 
+
+## 📸 Images
+
+### Android & iOS
+| Meme Listing Screen | Choose Meme | Meme Editor Screen | 
+| -- | -- | -- |
+| <img src="https://github.com/user-attachments/assets/ad6767fc-7baa-4398-b744-d11c0488639a" alt="Meme Listing Screen" width="270" height="585" />|<img src="https://github.com/user-attachments/assets/d5414630-eaa3-4cce-8f6b-08e47405cb04" alt="Choose Meme" width="270" height="585" />| <img src="https://github.com/user-attachments/assets/15b9f622-747b-424f-8a55-86782302de3b" alt="Meme Editor Screen" width="270" height="585" />|
+
 ## 🛠️ Technology Stack
 
 - **Compose Multiplatform**: UI framework for consistent interface across platforms

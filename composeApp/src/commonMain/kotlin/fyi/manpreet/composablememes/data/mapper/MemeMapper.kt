@@ -14,7 +14,9 @@ fun Meme.toMemeData(): MemeTable.MemeData {
     return MemeTable.MemeData(
         id = id,
         imageUrl = imageName.value,
-        createdDateInMillis = Clock.System.now().toEpochMilliseconds(),
+        createdDateInMillis =
+        if (createdDateInMillis == Meme.INVALID_ID) Clock.System.now().toEpochMilliseconds()
+        else createdDateInMillis,
         path = path.value.substringAfterLast("/"),
         isFavorite = isFavorite,
     )
@@ -30,6 +32,7 @@ fun MemeTable.MemeData.toMeme(): Meme {
         path = MemeImagePath(path),
         isFavorite = isFavorite,
         isSelected = false,
+        createdDateInMillis = createdDateInMillis,
     )
 }
 
@@ -49,6 +52,7 @@ fun MemeResponse.toMeme(): List<Meme> {
             isSelected = false,
             width = meme.width,
             height = meme.height,
+            createdDateInMillis = Meme.INVALID_ID,
         )
     }
 }

@@ -6,6 +6,7 @@ data class Meme(
     val id: Long = INVALID_ID,
     val imageName: MemeImageName,
     val path: MemeImagePath? = null,
+    val createdDateInMillis: Long ,
     val isFavorite: Boolean = false,
     val isSelected: Boolean = false,
     val width: Int = 0,

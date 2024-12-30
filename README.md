@@ -48,6 +48,7 @@
   - Android: Native Android SDK integration
   - iOS: Swift/Kotlin interoperability
   - Web: WASM
+- Memes from [imgflip](https://imgflip.com/memetemplates)
 - **Image Processing**: Process the image for each platform
 - **Storage**: [KStore](https://github.com/xxfast/KStore)
 

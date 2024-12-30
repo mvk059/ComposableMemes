@@ -10,16 +10,36 @@ jobs:
   unitTest:
     name: Run unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set java
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Configure Gradle properties
+        run: |
+          mkdir -p ~/.gradle
+          echo "org.gradle.caching=true" >> ~/.gradle/gradle.properties
+          echo "org.gradle.parallel=true" >> ~/.gradle/gradle.properties
+          echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
       - name: Unit tests
         run: |
-          bash ./gradlew :composeApp:test
+          ./gradlew :composeApp:test --no-daemon
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: composeApp/build/reports/tests/

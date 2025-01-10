@@ -1,6 +1,6 @@
 <div align="center">
 
-  <a href="https://github.com/anuraghazra/github-readme-stats">
+  <a>
     <picture>
       <img alt="ComposableMemes banner" src="https://github.com/user-attachments/assets/53b35a60-c993-4903-9189-c77272db1375" height="150">
     </picture>

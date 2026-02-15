@@ -1,0 +1,67 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build WASM production bundle
+        run: ./gradlew clean wasmJsBrowserProductionWebpack
+
+      - name: Prepare Vercel deployment directory
+        run: |
+          mkdir -p vercel-deploy
+          cp -r composeApp/build/kotlin-webpack/wasmJs/productionExecutable/* vercel-deploy/ || true
+          cp -r composeApp/build/processedResources/wasmJs/main/* vercel-deploy/ || true
+          # List contents for debugging
+          echo "Contents of vercel-deploy:"
+          ls -la vercel-deploy/
+          # Verify index.html exists
+          if [ -f vercel-deploy/index.html ]; then
+            echo "✅ index.html found at root"
+          else
+            echo "❌ ERROR: index.html not found"
+            exit 1
+          fi
+
+      - name: Deploy to Vercel (Production)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./vercel-deploy
+          vercel-args: '--prod'
+
+      - name: Deploy to Vercel (Preview)
+        if: github.event_name == 'pull_request'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./vercel-deploy

@@ -8,3 +8,10 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinx.serialization) apply(false)
 }
+// Pin patched versions of transitive dev-server npm dependencies
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
+    rootProject.extensions.getByType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().apply {
+        resolution("node-forge", "1.3.2")
+        resolution("http-proxy-middleware", "2.0.9")
+    }
+}
